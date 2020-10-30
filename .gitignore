@@ -131,7 +131,8 @@ MNIST
 
 # output bin large!
 output/
-dataset/
+/output/
+/dataset/
 image/
 models_bert/
 runs/
