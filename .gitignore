@@ -130,14 +130,10 @@ MNIST
 
 
 # output bin large!
-output/
-dataset/
 /output/
 /dataset/
-image/
+/image/
 /models_bert/
-models_bert/
-runs/
-cache/
+/runs/
 
 *.bin
