@@ -135,6 +135,7 @@ dataset/
 /output/
 /dataset/
 image/
+/models_bert/
 models_bert/
 runs/
 cache/
