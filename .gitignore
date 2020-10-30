@@ -137,3 +137,5 @@ MNIST
 /runs/*
 
 *.bin
+*.json
+*.pt
