@@ -130,11 +130,11 @@ MNIST
 
 
 # output bin large!
-/output/*
-/dataset/*
-/image/*
-/models_bert/*
-/runs/*
+/output/
+/dataset/
+/image/
+/models_bert/
+/runs/
 
 *.bin
 *.json
