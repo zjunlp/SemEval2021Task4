@@ -135,5 +135,6 @@ dataset/
 image/
 models_bert/
 runs/
+cache/
 
 *.bin
