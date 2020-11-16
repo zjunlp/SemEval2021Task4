@@ -8,6 +8,7 @@ SEMEVAL_DIR_TASK2="./dataset/task2"
 TRAIN_1_DEV_2="./dataset/train_1_dev_2"
 
 # -m torch.distributed.launch --nproc_per_node=1  --nnodes=1
+# lr = 1e-5 get the result
 
 CUDA_VISIBLE_DEVICES=0 python \
         run_roberta.py \

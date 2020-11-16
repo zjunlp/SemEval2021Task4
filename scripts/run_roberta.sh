@@ -1,6 +1,4 @@
-
 model='roberta-large'
-
 TRAIN_1_DEV_2="./dataset/train_1_dev_2"
 
 
@@ -10,16 +8,17 @@ MODEL_NAME_OR_PATH="/home/xx/pretrained_model/"${model}
 # dataset dir
 SEMEVAL_DIR_TASK1="./dataset/task1"
 SEMEVAL_DIR_TASK2="./dataset/task2"
-LEARNING_RATE=1e-6
 
 # hyperparameter
-learning_rate=1e-6
+# lr = 1e-6 get the result
+
+learning_rate=5e-6
 epochs=10
 max_seq_length=128
-OUTPUT_DIR=./output/${model}_128_train_1
+OUTPUT_DIR=./output/${model}_128_train_1${learning_rate}
 
-
-CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=1  --nnodes=1\
+#  -m torch.distributed.launch --nproc_per_node=1  --nnodes=1\
+CUDA_VISIBLE_DEVICES=1 python \
         run_roberta.py \
         --task_name semeval \
         --model_name_or_path ${MODEL_NAME_OR_PATH} \
