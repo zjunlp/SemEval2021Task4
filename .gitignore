@@ -133,6 +133,7 @@ MNIST
 output/
 image/
 models_bert/
+best_model/
 runs/
 
 *.bin
