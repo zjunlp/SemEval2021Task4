@@ -162,168 +162,6 @@ class DataProcessor:
         raise NotImplementedError()
 
 
-class RaceProcessor(DataProcessor):
-    """Processor for the RACE data set."""
-
-    def get_train_examples(self, data_dir):
-        """See base class."""
-        logger.info("LOOKING AT {} train".format(data_dir))
-        high = os.path.join(data_dir, "train/high")
-        middle = os.path.join(data_dir, "train/middle")
-        high = self._read_txt(high)
-        middle = self._read_txt(middle)
-        return self._create_examples(high + middle, "train")
-
-    def get_dev_examples(self, data_dir):
-        """See base class."""
-        logger.info("LOOKING AT {} dev".format(data_dir))
-        high = os.path.join(data_dir, "dev/high")
-        middle = os.path.join(data_dir, "dev/middle")
-        high = self._read_txt(high)
-        middle = self._read_txt(middle)
-        return self._create_examples(high + middle, "dev")
-
-    def get_test_examples(self, data_dir):
-        """See base class."""
-        logger.info("LOOKING AT {} test".format(data_dir))
-        high = os.path.join(data_dir, "test/high")
-        middle = os.path.join(data_dir, "test/middle")
-        high = self._read_txt(high)
-        middle = self._read_txt(middle)
-        return self._create_examples(high + middle, "test")
-
-    def get_labels(self):
-        """See base class."""
-        return ["0", "1", "2", "3"]
-
-    def _read_txt(self, input_dir):
-        lines = []
-        files = glob.glob(input_dir + "/*txt")
-        for file in tqdm.tqdm(files, desc="read files"):
-            with open(file, "r", encoding="utf-8") as fin:
-                data_raw = json.load(fin)
-                data_raw["race_id"] = file
-                lines.append(data_raw)
-        return lines
-
-    def _create_examples(self, lines, set_type):
-        """Creates examples for the training and dev sets."""
-        examples = []
-        for (_, data_raw) in enumerate(lines):
-            race_id = "%s-%s" % (set_type, data_raw["race_id"])
-            article = data_raw["article"]
-            for i in range(len(data_raw["answers"])):
-                truth = str(ord(data_raw["answers"][i]) - ord("A"))
-                question = data_raw["questions"][i]
-                options = data_raw["options"][i]
-
-                examples.append(
-                    InputExample(
-                        example_id=race_id,
-                        question=question,
-                        contexts=[article, article, article, article],  # this is not efficient but convenient
-                        endings=[options[0], options[1], options[2], options[3]],
-                        label=truth,
-                    )
-                )
-        return examples
-
-
-class SynonymProcessor(DataProcessor):
-    """Processor for the Synonym data set."""
-
-    def get_train_examples(self, data_dir):
-        """See base class."""
-        logger.info("LOOKING AT {} train".format(data_dir))
-        return self._create_examples(self._read_csv(os.path.join(data_dir, "mctrain.csv")), "train")
-
-    def get_dev_examples(self, data_dir):
-        """See base class."""
-        logger.info("LOOKING AT {} dev".format(data_dir))
-        return self._create_examples(self._read_csv(os.path.join(data_dir, "mchp.csv")), "dev")
-
-    def get_test_examples(self, data_dir):
-        """See base class."""
-        logger.info("LOOKING AT {} dev".format(data_dir))
-
-        return self._create_examples(self._read_csv(os.path.join(data_dir, "mctest.csv")), "test")
-
-    def get_labels(self):
-        """See base class."""
-        return ["0", "1", "2", "3", "4"]
-
-    def _read_csv(self, input_file):
-        with open(input_file, "r", encoding="utf-8") as f:
-            return list(csv.reader(f))
-
-    def _create_examples(self, lines: List[List[str]], type: str):
-        """Creates examples for the training and dev sets."""
-
-        examples = [
-            InputExample(
-                example_id=line[0],
-                question="",  # in the swag dataset, the
-                # common beginning of each
-                # choice is stored in "sent2".
-                contexts=[line[1], line[1], line[1], line[1], line[1]],
-                endings=[line[2], line[3], line[4], line[5], line[6]],
-                label=line[7],
-            )
-            for line in lines  # we skip the line with the column names
-        ]
-
-        return examples
-
-# useful
-class SwagProcessor(DataProcessor):
-    """Processor for the SWAG data set."""
-
-    def get_train_examples(self, data_dir):
-        """See base class."""
-        logger.info("LOOKING AT {} train".format(data_dir))
-        return self._create_examples(self._read_csv(os.path.join(data_dir, "train.csv")), "train")
-
-    def get_dev_examples(self, data_dir):
-        """See base class."""
-        logger.info("LOOKING AT {} dev".format(data_dir))
-        return self._create_examples(self._read_csv(os.path.join(data_dir, "val.csv")), "dev")
-
-    def get_test_examples(self, data_dir):
-        """See base class."""
-        logger.info("LOOKING AT {} dev".format(data_dir))
-        raise ValueError(
-            "For swag testing, the input file does not contain a label column. It can not be tested in current code"
-            "setting!"
-        )
-        return self._create_examples(self._read_csv(os.path.join(data_dir, "test.csv")), "test")
-
-    def get_labels(self):
-        """See base class."""
-        return ["0", "1", "2", "3"]
-
-    def _read_csv(self, input_file):
-        with open(input_file, "r", encoding="utf-8") as f:
-            return list(csv.reader(f))
-
-    def _create_examples(self, lines: List[List[str]], type: str):
-        """Creates examples for the training and dev sets."""
-        if type == "train" and lines[0][-1] != "label":
-            raise ValueError("For training, the input file must contain a label column.")
-
-        examples = [
-            InputExample(
-                example_id=line[2],
-                question=line[5],  # in the swag dataset, the
-                # common beginning of each
-                # choice is stored in "sent2".
-                contexts=[line[4], line[4], line[4], line[4]],
-                endings=[line[7], line[8], line[9], line[10]],
-                label=line[11],
-            )
-            for line in lines[1:]  # we skip the line with the column names
-        ]
-
-        return examples
 
 class SemEvalProcessor(DataProcessor):
     """Processor for the SWAG data set."""
@@ -449,96 +287,6 @@ class SemEvalEnhancedProcessor(DataProcessor):
 
 
 
-class ArcProcessor(DataProcessor):
-    """Processor for the ARC data set (request from allennlp)."""
-
-    def get_train_examples(self, data_dir):
-        """See base class."""
-        logger.info("LOOKING AT {} train".format(data_dir))
-        return self._create_examples(self._read_json(os.path.join(data_dir, "train.jsonl")), "train")
-
-    def get_dev_examples(self, data_dir):
-        """See base class."""
-        logger.info("LOOKING AT {} dev".format(data_dir))
-        return self._create_examples(self._read_json(os.path.join(data_dir, "dev.jsonl")), "dev")
-
-    def get_test_examples(self, data_dir):
-        logger.info("LOOKING AT {} test".format(data_dir))
-        return self._create_examples(self._read_json(os.path.join(data_dir, "test.jsonl")), "test")
-
-    def get_labels(self):
-        """See base class."""
-        return ["0", "1", "2", "3"]
-
-    def _read_json(self, input_file):
-        with open(input_file, "r", encoding="utf-8") as fin:
-            lines = fin.readlines()
-            return lines
-
-    def _create_examples(self, lines, type):
-        """Creates examples for the training and dev sets."""
-
-        # There are two types of labels. They should be normalized
-        def normalize(truth):
-            if truth in "ABCD":
-                return ord(truth) - ord("A")
-            elif truth in "1234":
-                return int(truth) - 1
-            else:
-                logger.info("truth ERROR! %s", str(truth))
-                return None
-
-        examples = []
-        three_choice = 0
-        four_choice = 0
-        five_choice = 0
-        other_choices = 0
-        # we deleted example which has more than or less than four choices
-        for line in tqdm.tqdm(lines, desc="read arc data"):
-            data_raw = json.loads(line.strip("\n"))
-            if len(data_raw["question"]["choices"]) == 3:
-                three_choice += 1
-                continue
-            elif len(data_raw["question"]["choices"]) == 5:
-                five_choice += 1
-                continue
-            elif len(data_raw["question"]["choices"]) != 4:
-                other_choices += 1
-                continue
-            four_choice += 1
-            truth = str(normalize(data_raw["answerKey"]))
-            assert truth != "None"
-            question_choices = data_raw["question"]
-            question = question_choices["stem"]
-            id = data_raw["id"]
-            options = question_choices["choices"]
-            if len(options) == 4:
-                examples.append(
-                    InputExample(
-                        example_id=id,
-                        question=question,
-                        contexts=[
-                            options[0]["para"].replace("_", ""),
-                            options[1]["para"].replace("_", ""),
-                            options[2]["para"].replace("_", ""),
-                            options[3]["para"].replace("_", ""),
-                        ],
-                        endings=[options[0]["text"], options[1]["text"], options[2]["text"], options[3]["text"]],
-                        label=truth,
-                    )
-                )
-
-        if type == "train":
-            assert len(examples) > 1
-            assert examples[0].label is not None
-        logger.info("len examples: %s}", str(len(examples)))
-        logger.info("Three choices: %s", str(three_choice))
-        logger.info("Five choices: %s", str(five_choice))
-        logger.info("Other choices: %s", str(other_choices))
-        logger.info("four choices: %s", str(four_choice))
-
-        return examples
-
 # modify 
 def convert_examples_to_features(
     examples: List[InputExample],
@@ -613,6 +361,215 @@ def convert_examples_to_features(
 
     return features
 
+# def squad_convert_example_to_features(
+#     example, max_seq_length, doc_stride, max_query_length, padding_strategy, is_training
+# ):
+#     features = []
+#     if is_training and not example.is_impossible:
+#         # Get start and end position
+#         start_position = example.start_position
+#         end_position = example.end_position
 
-processors = {"race": RaceProcessor, "swag": SwagProcessor, "arc": ArcProcessor, "syn": SynonymProcessor, "semeval" : SemEvalProcessor, 'semevalenhanced' : SemEvalEnhancedProcessor}
+#         # If the answer cannot be found in the text, then skip this example.
+#         # actual_text = " ".join(example.doc_tokens[start_position : (end_position + 1)])
+#         # cleaned_answer_text = " ".join(whitespace_tokenize(example.answer_text))
+#         # if actual_text.find(cleaned_answer_text) == -1:
+#         #     logger.warning("Could not find answer: '%s' vs. '%s'", actual_text, cleaned_answer_text)
+#         #     return []
+
+#     tok_to_orig_index = []
+#     orig_to_tok_index = []
+#     all_doc_tokens = []
+#     for (i, token) in enumerate(example.doc_tokens):
+#         # 这个复杂度是不是有点高啊， 完全可以用cnt+1
+#         orig_to_tok_index.append(len(all_doc_tokens))
+#         if tokenizer.__class__.__name__ in [
+#             "RobertaTokenizer",
+#             "LongformerTokenizer",
+#             "BartTokenizer",
+#             "RobertaTokenizerFast",
+#             "LongformerTokenizerFast",
+#             "BartTokenizerFast",
+#         ]:
+#             sub_tokens = tokenizer.tokenize(token, add_prefix_space=True)
+#         else:
+#             sub_tokens = tokenizer.tokenize(token)
+#         for sub_token in sub_tokens:
+#             tok_to_orig_index.append(i)
+#             all_doc_tokens.append(sub_token)
+
+#     if is_training and not example.is_impossible:
+#         tok_start_position = orig_to_tok_index[example.start_position]
+#         if example.end_position < len(example.doc_tokens) - 1:
+#             tok_end_position = orig_to_tok_index[example.end_position + 1] - 1
+#         else:
+#             tok_end_position = len(all_doc_tokens) - 1
+
+#         (tok_start_position, tok_end_position) = _improve_answer_span(
+#             all_doc_tokens, tok_start_position, tok_end_position, tokenizer, example.answer_text
+#         )
+
+#     spans = []
+
+#     truncated_query = tokenizer.encode(
+#         example.question_text, add_special_tokens=False, truncation=True, max_length=max_query_length
+#     )
+
+#     # Tokenizers who insert 2 SEP tokens in-between <context> & <question> need to have special handling
+#     # in the way they compute mask of added tokens.
+#     tokenizer_type = type(tokenizer).__name__.replace("Tokenizer", "").lower()
+#     sequence_added_tokens = (
+#         tokenizer.max_len - tokenizer.max_len_single_sentence + 1
+#         if tokenizer_type in MULTI_SEP_TOKENS_TOKENIZERS_SET
+#         else tokenizer.max_len - tokenizer.max_len_single_sentence
+#     )
+#     sequence_pair_added_tokens = tokenizer.max_len - tokenizer.max_len_sentences_pair
+
+#     span_doc_tokens = all_doc_tokens
+#     while len(spans) * doc_stride < len(all_doc_tokens):
+
+#         # Define the side we want to truncate / pad and the text/pair sorting
+#         if tokenizer.padding_side == "right":
+#             texts = truncated_query
+#             pairs = span_doc_tokens
+#             truncation = TruncationStrategy.ONLY_SECOND.value
+#         else:
+#             texts = span_doc_tokens
+#             pairs = truncated_query
+#             truncation = TruncationStrategy.ONLY_FIRST.value
+
+#         encoded_dict = tokenizer.encode_plus(  # TODO(thom) update this logic
+#             texts,
+#             pairs,
+#             truncation=truncation,
+#             padding=padding_strategy,
+#             max_length=max_seq_length,
+#             return_overflowing_tokens=True,
+#             stride=max_seq_length - doc_stride - len(truncated_query) - sequence_pair_added_tokens,
+#             return_token_type_ids=True,
+#         )
+
+#         paragraph_len = min(
+#             len(all_doc_tokens) - len(spans) * doc_stride,
+#             max_seq_length - len(truncated_query) - sequence_pair_added_tokens,
+#         )
+
+#         if tokenizer.pad_token_id in encoded_dict["input_ids"]:
+#             if tokenizer.padding_side == "right":
+#                 non_padded_ids = encoded_dict["input_ids"][: encoded_dict["input_ids"].index(tokenizer.pad_token_id)]
+#             else:
+#                 last_padding_id_position = (
+#                     len(encoded_dict["input_ids"]) - 1 - encoded_dict["input_ids"][::-1].index(tokenizer.pad_token_id)
+#                 )
+#                 non_padded_ids = encoded_dict["input_ids"][last_padding_id_position + 1 :]
+
+#         else:
+#             non_padded_ids = encoded_dict["input_ids"]
+
+#         tokens = tokenizer.convert_ids_to_tokens(non_padded_ids)
+
+#         token_to_orig_map = {}
+#         for i in range(paragraph_len):
+#             index = len(truncated_query) + sequence_added_tokens + i if tokenizer.padding_side == "right" else i
+#             token_to_orig_map[index] = tok_to_orig_index[len(spans) * doc_stride + i]
+
+#         encoded_dict["paragraph_len"] = paragraph_len
+#         encoded_dict["tokens"] = tokens
+#         encoded_dict["token_to_orig_map"] = token_to_orig_map
+#         encoded_dict["truncated_query_with_special_tokens_length"] = len(truncated_query) + sequence_added_tokens
+#         encoded_dict["token_is_max_context"] = {}
+#         encoded_dict["start"] = len(spans) * doc_stride
+#         encoded_dict["length"] = paragraph_len
+
+#         spans.append(encoded_dict)
+
+#         if "overflowing_tokens" not in encoded_dict or (
+#             "overflowing_tokens" in encoded_dict and len(encoded_dict["overflowing_tokens"]) == 0
+#         ):
+#             break
+#         span_doc_tokens = encoded_dict["overflowing_tokens"]
+
+#     for doc_span_index in range(len(spans)):
+#         for j in range(spans[doc_span_index]["paragraph_len"]):
+#             is_max_context = _new_check_is_max_context(spans, doc_span_index, doc_span_index * doc_stride + j)
+#             index = (
+#                 j
+#                 if tokenizer.padding_side == "left"
+#                 else spans[doc_span_index]["truncated_query_with_special_tokens_length"] + j
+#             )
+#             spans[doc_span_index]["token_is_max_context"][index] = is_max_context
+
+#     for span in spans:
+#         # Identify the position of the CLS token
+#         cls_index = span["input_ids"].index(tokenizer.cls_token_id)
+
+#         # p_mask: mask with 1 for token than cannot be in the answer (0 for token which can be in an answer)
+#         # Original TF implem also keep the classification token (set to 0)
+#         p_mask = np.ones_like(span["token_type_ids"])
+#         if tokenizer.padding_side == "right":
+#             p_mask[len(truncated_query) + sequence_added_tokens :] = 0
+#         else:
+#             p_mask[-len(span["tokens"]) : -(len(truncated_query) + sequence_added_tokens)] = 0
+
+#         pad_token_indices = np.where(span["input_ids"] == tokenizer.pad_token_id)
+#         special_token_indices = np.asarray(
+#             tokenizer.get_special_tokens_mask(span["input_ids"], already_has_special_tokens=True)
+#         ).nonzero()
+
+#         p_mask[pad_token_indices] = 1
+#         p_mask[special_token_indices] = 1
+
+#         # Set the cls index to 0: the CLS index can be used for impossible answers
+#         p_mask[cls_index] = 0
+
+#         span_is_impossible = example.is_impossible
+#         start_position = 0
+#         end_position = 0
+#         if is_training and not span_is_impossible:
+#             # For training, if our document chunk does not contain an annotation
+#             # we throw it out, since there is nothing to predict.
+#             doc_start = span["start"]
+#             doc_end = span["start"] + span["length"] - 1
+#             out_of_span = False
+
+#             if not (tok_start_position >= doc_start and tok_end_position <= doc_end):
+#                 out_of_span = True
+
+#             if out_of_span:
+#                 start_position = cls_index
+#                 end_position = cls_index
+#                 span_is_impossible = True
+#             else:
+#                 if tokenizer.padding_side == "left":
+#                     doc_offset = 0
+#                 else:
+#                     doc_offset = len(truncated_query) + sequence_added_tokens
+
+#                 start_position = tok_start_position - doc_start + doc_offset
+#                 end_position = tok_end_position - doc_start + doc_offset
+
+#         features.append(
+#             SquadFeatures(
+#                 span["input_ids"],
+#                 span["attention_mask"],
+#                 span["token_type_ids"],
+#                 cls_index,
+#                 p_mask.tolist(),
+#                 example_index=0,  # Can not set unique_id and example_index here. They will be set after multiple processing.
+#                 unique_id=0,
+#                 paragraph_len=span["paragraph_len"],
+#                 token_is_max_context=span["token_is_max_context"],
+#                 tokens=span["tokens"],
+#                 token_to_orig_map=span["token_to_orig_map"],
+#                 start_position=start_position,
+#                 end_position=end_position,
+#                 is_impossible=span_is_impossible,
+#                 qas_id=example.qas_id,
+#             )
+#         )
+#     return features
+
+
+
+processors = {"semeval" : SemEvalProcessor, 'semevalenhanced' : SemEvalEnhancedProcessor}
 MULTIPLE_CHOICE_TASKS_NUM_LABELS = {"race", 4, "swag", 4, "arc", 4, "syn", 5, "semeval" , 5, "semevalenhanced", 6}
