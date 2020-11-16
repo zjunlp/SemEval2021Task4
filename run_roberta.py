@@ -28,6 +28,7 @@ from typing import Dict, Optional
 
 import numpy as np
 
+
 from transformers import (
     WEIGHTS_NAME,
     AutoConfig,
@@ -244,6 +245,8 @@ def main():
         if trainer.is_world_master():
             with open(output_eval_file, "a") as writer:
                 logger.info("***** Eval results *****  " + str(global_step))
+                writer.write('\neeeevvvvaaaallll\n')
+                writer.writelines('eval on ' + data_args.data_dir + '\n')
                 for key, value in result.items():
                     logger.info("  %s = %s", key, value)
                     writer.write("%s = %s\n" % (key, value))
@@ -319,10 +322,14 @@ def main():
                 if results['eval_acc'] > best_acc:
                     best_model = global_step
                     best_acc = results['eval_acc']
-            print('after evaluate all checkpoints the best model as followed:')
-
-            print('===============' + str(best_model) + '===================')
-            print('===============' + str(best_acc) + '===================')
+            if trainer.is_world_master():
+                results['eval_acc'] = best_acc
+                with open(output_eval_file, "a") as writer:
+                    logger.info("***** Eval results *****  " + str(global_step))
+                    writer.writelines('best_model at checkpoint '+ str(best_model)+'\n')
+                    for key, value in result.items():
+                        logger.info("  %s = %s", key, value)
+                        writer.write("%s = %s\n" % (key, value))
     return results
 
 

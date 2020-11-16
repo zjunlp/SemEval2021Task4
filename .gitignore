@@ -135,6 +135,8 @@ MNIST
 /image/
 /models_bert/
 /runs/
+best_model/
+wandb/
 
 *.bin
 *.json

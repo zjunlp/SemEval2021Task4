@@ -1,5 +1,4 @@
-
-model='albert-xxlarge-v2'
+model='longformer-base-4096'
 
 
 
@@ -12,7 +11,7 @@ TRAIN_1_DEV_2="./dataset/train_1_dev_2"
 
 # -m torch.distributed.launch --nproc_per_node=1  --nnodes=1
 
-CUDA_VISIBLE_DEVICES=0 python \
+CUDA_VISIBLE_DEVICES=2 python \
         run_roberta.py \
         --task_name semeval \
         --model_name_or_path ${MODEL_NAME_OR_PATH} \
@@ -22,13 +21,15 @@ CUDA_VISIBLE_DEVICES=0 python \
         --data_dir $SEMEVAL_DIR_TASK2 \
         --learning_rate 1e-5 \
         --num_train_epochs 10 \
-        --max_seq_length 128 \
+        --max_seq_length 1024 \
         --output_dir ./output/${model}_task2_128 \
         --save_steps 2000 \
+        --fp16 \
         --per_device_eval_batch_size=8 \
         --per_device_train_batch_size=1 \
-        --gradient_accumulation_steps 1 \
-        --evaluate_during_training   
+        --gradient_accumulation_steps=32 \
+        --evaluate_during_training   \
+        --overwrite_output_dir
 
 
 

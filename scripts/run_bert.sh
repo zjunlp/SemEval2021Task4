@@ -16,17 +16,23 @@ CUDA_VISIBLE_DEVICES=2 python \
         run_roberta.py \
         --task_name semeval \
         --model_name_or_path ${MODEL_NAME_OR_PATH} \
+        --do_train \
         --do_eval \
         --eval_all_checkpoints \
         --data_dir $SEMEVAL_DIR \
         --learning_rate 1e-5 \
-        --num_train_epochs 10 \
-        --max_seq_length 512 \
-        --output_dir ./output/${model}_512_task1 \
+        --num_train_epochs 1 \
+        --max_seq_length 128 \
+        --output_dir ./output/${model}_512_task1_test \
         --save_steps 500 \
         --per_device_eval_batch_size=8 \
         --per_device_train_batch_size=1 \
         --gradient_accumulation_steps 1 \
+        --load_best_model_at_end  \
+        --evaluate_during_training   \
+        --overwrite_output_dir  \
+        --eval_steps 100
+
 
 
 
