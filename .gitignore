@@ -130,10 +130,9 @@ MNIST
 
 
 # output bin large!
+saved_model_file/
+
 output/
-image/
-models_bert/
-best_model/
 runs/
 
 *.bin
