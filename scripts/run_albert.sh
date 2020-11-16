@@ -1,12 +1,7 @@
-
 model='albert-xxlarge-v2'
 
-
-
 MODEL_NAME_OR_PATH="/home/xx/pretrained_model/"${model}
-
-
-SEMEVAL_DIR="./dataset/training_data"
+SEMEVAL_DIR_TASK1="./dataset/task1"
 SEMEVAL_DIR_TASK2="./dataset/task2"
 
 # -m torch.distributed.launch --nproc_per_node=1  --nnodes=1
