@@ -131,9 +131,10 @@ MNIST
 
 # output bin large!
 output/
-dataset/
 image/
 models_bert/
 runs/
 
 *.bin
+*.ckpt*
+cached*
