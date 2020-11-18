@@ -20,7 +20,7 @@ OUTPUT_DIR=./output/${model}_128_train_1${learning_rate}
 #  -m torch.distributed.launch --nproc_per_node=1  --nnodes=1\
 CUDA_VISIBLE_DEVICES=1 python \
         run_roberta.py \
-        --task_name semeval \
+        --task_name semevalenhanced \
         --model_name_or_path ${MODEL_NAME_OR_PATH} \
         --do_train \
         --do_eval \

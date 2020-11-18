@@ -10,10 +10,14 @@ import json
 
 import pickle
 
-from transformers import AutoTokenizer, AutoModelForMaskedLM
+from transformers import AutoTokenizer, AutoModelForMaskedLM, AlbertModel
 from transformers import pipeline
-tokenizer = AutoTokenizer.from_pretrained('/home/xx/pretrained_model/roberta-base')
-model = AutoModelForMaskedLM.from_pretrained('/home/xx/pretrained_model/roberta-base', return_dict=True)
+
+model_name = "albert-xxlarge-v2"
+
+
+tokenizer = AutoTokenizer.from_pretrained('/home/xx/pretrained_model/' + model_name)
+model = AutoModelForMaskedLM.from_pretrained('/home/xx/pretrained_model/' + model_name, return_dict=True)
 
 
 
@@ -89,7 +93,7 @@ def get_token_output(sentence, options):
 
 def add_new_option(data_path, new_file_name=None):
     if new_file_name == None:
-        new_file_name = data_path + 'enhanced'
+        new_file_name = data_path.replace('train','train_enhanced') 
     new_dict = []
     total = 0
     correct = 0
@@ -98,7 +102,7 @@ def add_new_option(data_path, new_file_name=None):
         for line in tqdm(file.readlines()):
             t = json.loads(line)
             article = t['article']
-            mask_sentence = article[:400] + t['question'].replace('@placeholder', '<mask>')
+            mask_sentence = article[:400] + t['question'].replace('@placeholder', '[MASK]')
             options =[ t['option_0'], t['option_1'],t['option_2'],t['option_3'],t['option_4']]
             result = top5_words(mask_sentence)[0]
             pretrain.append(result)
@@ -159,7 +163,7 @@ def add_new_option_1(data_path, new_file_name=None):
 
 batch_size = 16
 
-file_path = './dataset/task2/train.jsonl'
+file_path = './dataset/enhanced_albert_task1/train.jsonl'
 
 add_new_option(file_path)
 

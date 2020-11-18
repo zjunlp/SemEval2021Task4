@@ -224,32 +224,26 @@ def main():
 
     # Evaluation
     results = {}
+    results['eval_acc'] = 0.0
+    results['eval_loss'] = 100000.0 # inf
     if training_args.do_eval:
         logger.info("*** Evaluate ***")
 
         # result = trainer.evaluate()
 
         output_eval_file = os.path.join(training_args.output_dir, "eval_results.txt")
+        # result = trainer.evaluate()
+        # results.update(result)
+        # Evaluate
+        global_step = 99
         # if trainer.is_world_master():
-        #     with open(output_eval_file, "w") as writer:
-        #         logger.info("***** Eval results *****")
+        #     with open(output_eval_file, "a") as writer:
+        #         logger.info("***** Eval results *****  " + str(global_step))
+        #         writer.write('\neeeevvvvaaaallll\n')
+        #         writer.writelines('eval on ' + data_args.data_dir + '\n')
         #         for key, value in result.items():
         #             logger.info("  %s = %s", key, value)
         #             writer.write("%s = %s\n" % (key, value))
-
-        #         results.update(result)
-        result = trainer.evaluate()
-        results.update(result)
-        # Evaluate
-        global_step = 99
-        if trainer.is_world_master():
-            with open(output_eval_file, "a") as writer:
-                logger.info("***** Eval results *****  " + str(global_step))
-                writer.write('\neeeevvvvaaaallll\n')
-                writer.writelines('eval on ' + data_args.data_dir + '\n')
-                for key, value in result.items():
-                    logger.info("  %s = %s", key, value)
-                    writer.write("%s = %s\n" % (key, value))
 
         if data_args.eval_all_checkpoints:
             logger.info("Loading checkpoints saved during training for evaluation")
@@ -294,21 +288,6 @@ def main():
                     eval_dataset=eval_dataset,
                     compute_metrics=compute_metrics,
                 )
-                # prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
-                # choice0 = "It is eaten with a fork and a knife."
-                # choice1 = "It is eaten while held in the hand."
-                # choice2= "It is eaten  held in the hand."
-                # choice3 = "It is  while held in the hand."
-                # choice4 = "It is eaten while held in the ."
-                # labels = torch.tensor(0).unsqueeze(0)  # choice0 is correct (according to Wikipedia ;)), batch size 1
-
-                # encoding = tokenizer([[prompt, prompt, prompt, prompt, prompt], [choice0, choice1, choice2, choice3, choice4]], return_tensors='pt', padding=True)
-                # outputs = model(**{k: v.unsqueeze(0) for k,v in encoding.items()}, labels=labels)  # batch size is 1
-
-                #  # the linear classifier still needs to be trained
-                # loss = outputs.loss
-                # logits = outputs.logits
-                # import IPython; IPython.embed(); exit(1)
                 result = trainer.evaluate()
                 results.update(result)
                 # Evaluate
@@ -326,7 +305,7 @@ def main():
                 results['eval_acc'] = best_acc
                 with open(output_eval_file, "a") as writer:
                     logger.info("***** Eval results *****  " + str(global_step))
-                    writer.writelines('best_model at checkpoint '+ str(best_model)+'\n')
+                    writer.writelines('eval on task path' + data_args.data_dir + '\n')
                     for key, value in result.items():
                         logger.info("  %s = %s", key, value)
                         writer.write("%s = %s\n" % (key, value))
