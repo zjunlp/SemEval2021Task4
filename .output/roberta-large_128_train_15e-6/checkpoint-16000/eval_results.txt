@@ -1,2 +1,0 @@
-best_model at checkpoint 99
-best_model at checkpoint 99

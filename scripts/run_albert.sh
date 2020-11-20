@@ -18,11 +18,12 @@ CUDA_VISIBLE_DEVICES=0 python \
         --do_eval \
         --eval_all_checkpoints \
         --data_dir $SEMEVAL_DIR_TASK2 \
-        --learning_rate 1e-5 \
+        --learning_rate 5e-6 \
         --num_train_epochs 10 \
         --max_seq_length 128 \
         --output_dir ./output/${model}_task2_128 \
-        --save_steps 2000 \
+        --save_steps 500 \
+        --eval_steps 500 \
         --per_device_eval_batch_size=8 \
         --per_device_train_batch_size=1 \
         --gradient_accumulation_steps 1 \

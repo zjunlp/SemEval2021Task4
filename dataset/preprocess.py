@@ -14,6 +14,7 @@ from transformers import AutoTokenizer, AutoModelForMaskedLM, AlbertModel
 from transformers import pipeline
 
 model_name = "albert-xxlarge-v2"
+model_name = "roberta-large"
 
 
 tokenizer = AutoTokenizer.from_pretrained('/home/xx/pretrained_model/' + model_name)
@@ -102,7 +103,7 @@ def add_new_option(data_path, new_file_name=None):
         for line in tqdm(file.readlines()):
             t = json.loads(line)
             article = t['article']
-            mask_sentence = article[:400] + t['question'].replace('@placeholder', '[MASK]')
+            mask_sentence = article[:400] + t['question'].replace('@placeholder', '<mask>')
             options =[ t['option_0'], t['option_1'],t['option_2'],t['option_3'],t['option_4']]
             result = top5_words(mask_sentence)[0]
             pretrain.append(result)
@@ -163,7 +164,7 @@ def add_new_option_1(data_path, new_file_name=None):
 
 batch_size = 16
 
-file_path = './dataset/enhanced_albert_task1/train.jsonl'
+file_path = './dataset/enhanced_roberta_task2/train.jsonl'
 
 add_new_option(file_path)
 

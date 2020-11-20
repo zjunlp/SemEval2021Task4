@@ -36,13 +36,13 @@ from transformers import (
     AutoTokenizer,
     EvalPrediction,
     HfArgumentParser,
-    Trainer,
     TrainingArguments,
     set_seed,
     LongformerModel,
     RobertaForMultipleChoice
 )
 from utils import MultipleChoiceDataset, Split, processors
+from utils import Trainer
 
 
 logger = logging.getLogger(__name__)
@@ -291,12 +291,12 @@ def main():
                 result = trainer.evaluate()
                 results.update(result)
                 # Evaluate
-                if trainer.is_world_master():
-                    with open(output_eval_file, "a") as writer:
-                        logger.info("***** Eval results *****  " + str(global_step))
-                        for key, value in result.items():
-                            logger.info("  %s = %s", key, value)
-                            writer.write("%s = %s\n" % (key, value))
+                # if trainer.is_world_master():
+                #     with open(output_eval_file, "a") as writer:
+                #         logger.info("***** Eval results *****  " + str(global_step))
+                #         for key, value in result.items():
+                #             logger.info("  %s = %s", key, value)
+                #             writer.write("%s = %s\n" % (key, value))
 
                 if results['eval_acc'] > best_acc:
                     best_model = global_step
