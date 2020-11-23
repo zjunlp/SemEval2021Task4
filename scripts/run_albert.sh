@@ -10,7 +10,7 @@ TRAIN_1_DEV_2="./dataset/train_1_dev_2"
 # -m torch.distributed.launch --nproc_per_node=1  --nnodes=1
 # lr = 1e-5 get the result
 
-CUDA_VISIBLE_DEVICES=0 python \
+CUDA_VISIBLE_DEVICES=1 python \
         run_roberta.py \
         --task_name semeval \
         --model_name_or_path ${MODEL_NAME_OR_PATH} \
@@ -23,6 +23,7 @@ CUDA_VISIBLE_DEVICES=0 python \
         --max_seq_length 128 \
         --output_dir ./output/${model}_task2_128 \
         --save_steps 500 \
+        --logging_dir $OUTPUT_DIR \
         --eval_steps 500 \
         --per_device_eval_batch_size=8 \
         --per_device_train_batch_size=1 \

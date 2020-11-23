@@ -1,9 +1,9 @@
-model='roberta-large'
+model='albert-xxlarge-v2'
 MODEL_NAME_OR_PATH="/home/xx/pretrained_model/"${model}
-SEMEVAL_DIR_TASK2="./dataset/enhanced_roberta_task2"
+SEMEVAL_DIR_TASK2="./dataset/enhanced_albert_task1"
 
 TASK_NAME="semevalenhanced"
-OUTPUT_DIR=./output/${model}_enhanced_task2
+OUTPUT_DIR=./output/${model}_enhanced_task1
 
 # enhanced on task 1  hope it will work on roberta-large
 

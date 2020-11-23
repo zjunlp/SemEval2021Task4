@@ -12,15 +12,15 @@ SEMEVAL_DIR_TASK2="./dataset/task2"
 # hyperparameter
 # lr = 1e-6 get the result
 
-learning_rate=5e-6
-epochs=10
+learning_rate=5e-7
+epochs=8
 max_seq_length=128
 OUTPUT_DIR=./output/${model}_128_train_1${learning_rate}
 
 #  -m torch.distributed.launch --nproc_per_node=1  --nnodes=1\
-CUDA_VISIBLE_DEVICES=1 python \
+CUDA_VISIBLE_DEVICES=2 python \
         run_roberta.py \
-        --task_name semevalenhanced \
+        --task_name semeval \
         --model_name_or_path ${MODEL_NAME_OR_PATH} \
         --do_train \
         --do_eval \
@@ -31,6 +31,7 @@ CUDA_VISIBLE_DEVICES=1 python \
         --max_seq_length ${max_seq_length} \
         --output_dir ${OUTPUT_DIR} \
         --save_steps 2000 \
+        --logging_dir $OUTPUT_DIR \
         --eval_steps 500 \
         --per_device_eval_batch_size=8 \
         --per_device_train_batch_size=1 \
