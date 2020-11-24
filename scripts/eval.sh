@@ -11,6 +11,7 @@ SEMEVAL_DIR_1="./dataset/task3_eval1"
 task_name=($SEMEVAL_DIR_TASK1 $SEMEVAL_DIR_TASK2 $SEMEVAL_DIR_1 $SEMEVAL_DIR_2 $SEMEVAL_DIR_3)
 
 albert_task2_enhanced="./saved_model_file/albert_task2_enhanced"
+roberta_task1="./saved_model_file/roberta_task2"
 
 # in case some models cannot run on 512
 seq_len='128'
@@ -23,13 +24,15 @@ for task in ${task_name[@]}
 do
 CUDA_VISIBLE_DEVICES=1 python run_roberta.py \
         --task_name semeval \
-        --model_name_or_path  ${albert} \
+        --model_name_or_path  ${roberta} \
         --eval_all_checkpoints \
         --do_eval \
         --data_dir  $task \
         --max_seq_length ${seq_len} \
-        --output_dir ${albert_task2_enhanced} \
-        --per_device_eval_batch_size=1 
+        --output_dir ${roberta_task1} \
+        --per_device_eval_batch_size=1 \
+        --overwrite_cache
+
 
 echo "test on task-3 on dev"
 echo ${task}

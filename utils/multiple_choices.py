@@ -16,6 +16,8 @@
 """ Multiple choice fine-tuning: utilities to work with multiple choice tasks of reading comprehension """
 
 import csv
+
+import numpy as np
 import glob
 import json
 import logging
@@ -28,7 +30,8 @@ from typing import List, Optional
 import tqdm
 
 from filelock import FileLock
-from transformers import PreTrainedTokenizer, is_tf_available, is_torch_available
+from transformers import PreTrainedTokenizer, is_tf_available, is_torch_available, AlbertTokenizer, RobertaTokenizer, BertTokenizer
+from transformers.tokenization_utils_base import BatchEncoding, PreTrainedTokenizerBase, TruncationStrategy
 
 
 logger = logging.getLogger(__name__)
@@ -127,6 +130,68 @@ if is_torch_available():
                         examples = processor.get_train_examples(data_dir)
                     logger.info("Training examples: %s", len(examples))
                     self.features = convert_examples_to_features(
+                        examples,
+                        label_list,
+                        max_seq_length,
+                        tokenizer,
+                    )
+                    logger.info("Saving features into cached file %s", cached_features_file)
+                    torch.save(self.features, cached_features_file)
+
+        def __len__(self):
+            return len(self.features)
+
+        def __getitem__(self, i) -> InputFeatures:
+            return self.features[i]
+
+    class MultipleChoiceSlidingDataset(Dataset):
+        """
+        This will be superseded by a framework-agnostic approach
+        soon.
+        """
+
+        features: List[InputFeatures]
+
+        def __init__(
+            self,
+            data_dir: str,
+            tokenizer: PreTrainedTokenizer,
+            task: str,
+            max_seq_length: Optional[int] = None,
+            overwrite_cache=False,
+            mode: Split = Split.train,
+        ):
+            processor = processors[task]()
+
+            cached_features_file = os.path.join(
+                data_dir,
+                "cached_{}_{}_{}_{}".format(
+                    mode.value,
+                    tokenizer.__class__.__name__,
+                    str(max_seq_length),
+                    task,
+                ),
+            )
+
+            # Make sure only the first process in distributed training processes the dataset,
+            # and the others will use the cache.
+            lock_path = cached_features_file + ".lock"
+            with FileLock(lock_path):
+
+                if os.path.exists(cached_features_file) and not overwrite_cache:
+                    logger.info(f"Loading features from cached file {cached_features_file}")
+                    self.features = torch.load(cached_features_file)
+                else:
+                    logger.info(f"Creating features from dataset file at {data_dir}")
+                    label_list = processor.get_labels()
+                    if mode == Split.dev:
+                        examples = processor.get_dev_examples(data_dir)
+                    elif mode == Split.test:
+                        examples = processor.get_test_examples(data_dir)
+                    else:
+                        examples = processor.get_train_examples(data_dir)
+                    logger.info("Training examples: %s", len(examples))
+                    self.features = sliding_convert_examples_to_features(
                         examples,
                         label_list,
                         max_seq_length,
@@ -316,15 +381,16 @@ def convert_examples_to_features(
 
             # for bert like [text_b, text_a]
             # for xlnet [text_a[:400], text_b] seq_length 480
+            # TODO sliding window replace
             inputs = tokenizer(
-                text_b,
                 text_a,
+                text_b,
                 add_special_tokens=True,
                 max_length=max_length,
                 padding="max_length",
-                truncation=True,
+                truncation="only_first",
                 return_overflowing_tokens=True,
-                return_token_type_ids=True
+                return_token_type_ids=True,
             )
             if "num_truncated_tokens" in inputs and inputs["num_truncated_tokens"] > 0:
                 logger.info(
@@ -361,215 +427,194 @@ def convert_examples_to_features(
 
     return features
 
-# def squad_convert_example_to_features(
-#     example, max_seq_length, doc_stride, max_query_length, padding_strategy, is_training
-# ):
-#     features = []
-#     if is_training and not example.is_impossible:
-#         # Get start and end position
-#         start_position = example.start_position
-#         end_position = example.end_position
 
-#         # If the answer cannot be found in the text, then skip this example.
-#         # actual_text = " ".join(example.doc_tokens[start_position : (end_position + 1)])
-#         # cleaned_answer_text = " ".join(whitespace_tokenize(example.answer_text))
-#         # if actual_text.find(cleaned_answer_text) == -1:
-#         #     logger.warning("Could not find answer: '%s' vs. '%s'", actual_text, cleaned_answer_text)
-#         #     return []
+def _is_whitespace(c):
+    if c == " " or c == "\t" or c == "\r" or c == "\n" or ord(c) == 0x202F:
+        return True
+    return False
 
-#     tok_to_orig_index = []
-#     orig_to_tok_index = []
-#     all_doc_tokens = []
-#     for (i, token) in enumerate(example.doc_tokens):
-#         # 这个复杂度是不是有点高啊， 完全可以用cnt+1
-#         orig_to_tok_index.append(len(all_doc_tokens))
-#         if tokenizer.__class__.__name__ in [
-#             "RobertaTokenizer",
-#             "LongformerTokenizer",
-#             "BartTokenizer",
-#             "RobertaTokenizerFast",
-#             "LongformerTokenizerFast",
-#             "BartTokenizerFast",
-#         ]:
-#             sub_tokens = tokenizer.tokenize(token, add_prefix_space=True)
-#         else:
-#             sub_tokens = tokenizer.tokenize(token)
-#         for sub_token in sub_tokens:
-#             tok_to_orig_index.append(i)
-#             all_doc_tokens.append(sub_token)
 
-#     if is_training and not example.is_impossible:
-#         tok_start_position = orig_to_tok_index[example.start_position]
-#         if example.end_position < len(example.doc_tokens) - 1:
-#             tok_end_position = orig_to_tok_index[example.end_position + 1] - 1
-#         else:
-#             tok_end_position = len(all_doc_tokens) - 1
+def sliding_convert_examples_to_features(
+    examples: List[InputExample],
+    label_list: List[str],
+    max_length: int,
+    tokenizer: PreTrainedTokenizer,
+) -> List[InputFeatures]:
+    """
+    Loads a data file into a list of `InputFeatures`
+    """
 
-#         (tok_start_position, tok_end_position) = _improve_answer_span(
-#             all_doc_tokens, tok_start_position, tok_end_position, tokenizer, example.answer_text
-#         )
+    label_map = {label: i for i, label in enumerate(label_list)}
 
-#     spans = []
+    features = []
+    for (ex_index, example) in tqdm.tqdm(enumerate(examples), desc="convert examples to features"):
+        if ex_index % 10000 == 0:
+            logger.info("Writing example %d of %d" % (ex_index, len(examples)))
+        f = semeval_convert_example_to_features(
+            example, 
+            max_seq_length=max_length, 
+            doc_stride=100,
+            max_query_length=70,
+            padding_strategy="max_length",
+            tokenizer=tokenizer,
+            label_list=label_list
+        )
+        # 每一次都有很多个
+        features += f
 
-#     truncated_query = tokenizer.encode(
-#         example.question_text, add_special_tokens=False, truncation=True, max_length=max_query_length
-#     )
+    for f in features[:2]:
+        logger.info("*** Example ***")
+        logger.info("feature: %s" % f)
 
-#     # Tokenizers who insert 2 SEP tokens in-between <context> & <question> need to have special handling
-#     # in the way they compute mask of added tokens.
-#     tokenizer_type = type(tokenizer).__name__.replace("Tokenizer", "").lower()
-#     sequence_added_tokens = (
-#         tokenizer.max_len - tokenizer.max_len_single_sentence + 1
-#         if tokenizer_type in MULTI_SEP_TOKENS_TOKENIZERS_SET
-#         else tokenizer.max_len - tokenizer.max_len_single_sentence
-#     )
-#     sequence_pair_added_tokens = tokenizer.max_len - tokenizer.max_len_sentences_pair
+    return features
 
-#     span_doc_tokens = all_doc_tokens
-#     while len(spans) * doc_stride < len(all_doc_tokens):
 
-#         # Define the side we want to truncate / pad and the text/pair sorting
-#         if tokenizer.padding_side == "right":
-#             texts = truncated_query
-#             pairs = span_doc_tokens
-#             truncation = TruncationStrategy.ONLY_SECOND.value
-#         else:
-#             texts = span_doc_tokens
-#             pairs = truncated_query
-#             truncation = TruncationStrategy.ONLY_FIRST.value
+"""
+把所有的问答对进行切片处理，相当于每一个样本被分割成了多个样本。
+每次转换一个example question contexts label
 
-#         encoded_dict = tokenizer.encode_plus(  # TODO(thom) update this logic
-#             texts,
-#             pairs,
-#             truncation=truncation,
-#             padding=padding_strategy,
-#             max_length=max_seq_length,
-#             return_overflowing_tokens=True,
-#             stride=max_seq_length - doc_stride - len(truncated_query) - sequence_pair_added_tokens,
-#             return_token_type_ids=True,
-#         )
+"""
 
-#         paragraph_len = min(
-#             len(all_doc_tokens) - len(spans) * doc_stride,
-#             max_seq_length - len(truncated_query) - sequence_pair_added_tokens,
-#         )
 
-#         if tokenizer.pad_token_id in encoded_dict["input_ids"]:
-#             if tokenizer.padding_side == "right":
-#                 non_padded_ids = encoded_dict["input_ids"][: encoded_dict["input_ids"].index(tokenizer.pad_token_id)]
-#             else:
-#                 last_padding_id_position = (
-#                     len(encoded_dict["input_ids"]) - 1 - encoded_dict["input_ids"][::-1].index(tokenizer.pad_token_id)
-#                 )
-#                 non_padded_ids = encoded_dict["input_ids"][last_padding_id_position + 1 :]
+MULTI_SEP_TOKENS_TOKENIZERS_SET = {"roberta", "camembert", "bart"}
 
-#         else:
-#             non_padded_ids = encoded_dict["input_ids"]
+def semeval_convert_example_to_features(
+    example, max_seq_length, doc_stride, max_query_length, padding_strategy, 
+    tokenizer : PreTrainedTokenizer,
+    label_list
+):
+    # 选项个数
+    label_map = {label: i for i, label in enumerate(label_list)}
+    choice_inputs = [None]*len(example.endings)
+    # 先弄成5个list 之后在zip到len(list) 长度的5个的list
+    for ending_idx, (context, ending) in enumerate(zip(example.contexts, example.endings)):
+        question = example.question.replace("@placeholder", ending)
+        features = []
 
-#         tokens = tokenizer.convert_ids_to_tokens(non_padded_ids)
+        tok_to_orig_index = []
+        orig_to_tok_index = []
+        # tokens 
+        # for idx, c in enumerate(context):
+        #     if _is_whitespace(c):
+        #         context[idx] = " "
+        context = context.split(" ")
+        all_doc_tokens = []
+        for (i, token) in enumerate(context):
+            orig_to_tok_index.append(len(all_doc_tokens))
+            if tokenizer.__class__.__name__ in [
+                "RobertaTokenizer",
+                "LongformerTokenizer",
+                "BartTokenizer",
+                "RobertaTokenizerFast",
+                "LongformerTokenizerFast",
+                "BartTokenizerFast",
+            ]:
+                sub_tokens = tokenizer.tokenize(token, add_prefix_space=True)
+            else:
+                sub_tokens = tokenizer.tokenize(token)
+            for sub_token in sub_tokens:
+                tok_to_orig_index.append(i)
+                all_doc_tokens.append(sub_token)
 
-#         token_to_orig_map = {}
-#         for i in range(paragraph_len):
-#             index = len(truncated_query) + sequence_added_tokens + i if tokenizer.padding_side == "right" else i
-#             token_to_orig_map[index] = tok_to_orig_index[len(spans) * doc_stride + i]
+    # Tokenizers who insert 2 SEP tokens in-between <context> & <question> need to have special handling
+    # in the way they compute mask of added tokens.
+        tokenizer_type = type(tokenizer).__name__.replace("Tokenizer", "").lower()
+        sequence_added_tokens = (
+            tokenizer.max_len - tokenizer.max_len_single_sentence + 1
+            if tokenizer_type in MULTI_SEP_TOKENS_TOKENIZERS_SET
+            else tokenizer.max_len - tokenizer.max_len_single_sentence
+        )
+        sequence_pair_added_tokens = tokenizer.model_max_length - tokenizer.max_len_sentences_pair
+        spans = []
+        span_doc_tokens = all_doc_tokens
 
-#         encoded_dict["paragraph_len"] = paragraph_len
-#         encoded_dict["tokens"] = tokens
-#         encoded_dict["token_to_orig_map"] = token_to_orig_map
-#         encoded_dict["truncated_query_with_special_tokens_length"] = len(truncated_query) + sequence_added_tokens
-#         encoded_dict["token_is_max_context"] = {}
-#         encoded_dict["start"] = len(spans) * doc_stride
-#         encoded_dict["length"] = paragraph_len
+    # save the question_text
+        truncated_query = tokenizer.encode(
+            question, add_special_tokens=False, truncation=True, max_length=max_query_length
+        )
 
-#         spans.append(encoded_dict)
+        while len(spans) * doc_stride < len(all_doc_tokens):
 
-#         if "overflowing_tokens" not in encoded_dict or (
-#             "overflowing_tokens" in encoded_dict and len(encoded_dict["overflowing_tokens"]) == 0
-#         ):
-#             break
-#         span_doc_tokens = encoded_dict["overflowing_tokens"]
+            # Define the side we want to truncate / pad and the text/pair sorting
+            if tokenizer.padding_side == "right":
+                texts = truncated_query
+                pairs = span_doc_tokens
+                truncation = TruncationStrategy.ONLY_SECOND.value
+            else:
+                texts = span_doc_tokens
+                pairs = truncated_query
+                truncation = TruncationStrategy.ONLY_FIRST.value
 
-#     for doc_span_index in range(len(spans)):
-#         for j in range(spans[doc_span_index]["paragraph_len"]):
-#             is_max_context = _new_check_is_max_context(spans, doc_span_index, doc_span_index * doc_stride + j)
-#             index = (
-#                 j
-#                 if tokenizer.padding_side == "left"
-#                 else spans[doc_span_index]["truncated_query_with_special_tokens_length"] + j
-#             )
-#             spans[doc_span_index]["token_is_max_context"][index] = is_max_context
+            # encoded_dict has the overflowing tokens
+            encoded_dict = tokenizer.encode_plus(  # TODO(thom) update this logic
+                texts,
+                pairs,
+                truncation=truncation,
+                padding=padding_strategy,
+                max_length=max_seq_length,
+                return_overflowing_tokens=True,
+                stride=max_seq_length - doc_stride - len(truncated_query) - sequence_pair_added_tokens,
+                return_token_type_ids=True,
+            )
 
-#     for span in spans:
-#         # Identify the position of the CLS token
-#         cls_index = span["input_ids"].index(tokenizer.cls_token_id)
+            if tokenizer.pad_token_id in encoded_dict["input_ids"]:
+                if tokenizer.padding_side == "right":
+                    non_padded_ids = encoded_dict["input_ids"][: encoded_dict["input_ids"].index(tokenizer.pad_token_id)]
+                else:
+                    last_padding_id_position = (
+                        len(encoded_dict["input_ids"]) - 1 - encoded_dict["input_ids"][::-1].index(tokenizer.pad_token_id)
+                    )
+                    non_padded_ids = encoded_dict["input_ids"][last_padding_id_position + 1 :]
+            else:
+                non_padded_ids = encoded_dict["input_ids"]
 
-#         # p_mask: mask with 1 for token than cannot be in the answer (0 for token which can be in an answer)
-#         # Original TF implem also keep the classification token (set to 0)
-#         p_mask = np.ones_like(span["token_type_ids"])
-#         if tokenizer.padding_side == "right":
-#             p_mask[len(truncated_query) + sequence_added_tokens :] = 0
-#         else:
-#             p_mask[-len(span["tokens"]) : -(len(truncated_query) + sequence_added_tokens)] = 0
+            tokens = tokenizer.convert_ids_to_tokens(non_padded_ids)
 
-#         pad_token_indices = np.where(span["input_ids"] == tokenizer.pad_token_id)
-#         special_token_indices = np.asarray(
-#             tokenizer.get_special_tokens_mask(span["input_ids"], already_has_special_tokens=True)
-#         ).nonzero()
+            spans.append(encoded_dict)
 
-#         p_mask[pad_token_indices] = 1
-#         p_mask[special_token_indices] = 1
+            if "overflowing_tokens" not in encoded_dict or (
+                "overflowing_tokens" in encoded_dict and len(encoded_dict["overflowing_tokens"]) == 0
+            ):
+                break
+            span_doc_tokens = encoded_dict["overflowing_tokens"]
 
-#         # Set the cls index to 0: the CLS index can be used for impossible answers
-#         p_mask[cls_index] = 0
+        choice_inputs[ending_idx] = spans
+    features = []
+    # 确保所有的输入是长度一样的
+    for a in choice_inputs:
+        for b in choice_inputs:
+            assert len(a) == len(b)
+    for i in range(len(choice_inputs[0])):
+        choice = [] 
+        for a in choice_inputs:
+            choice.append(a[i])
 
-#         span_is_impossible = example.is_impossible
-#         start_position = 0
-#         end_position = 0
-#         if is_training and not span_is_impossible:
-#             # For training, if our document chunk does not contain an annotation
-#             # we throw it out, since there is nothing to predict.
-#             doc_start = span["start"]
-#             doc_end = span["start"] + span["length"] - 1
-#             out_of_span = False
+        label = label_map[example.label]
+        input_ids = [x["input_ids"] for x in choice]
+        attention_mask = (
+            [x["attention_mask"] for x in choice] if "attention_mask" in choice[0] else None
+        )
+        token_type_ids = (
+            [x["token_type_ids"] for x in choice] if "token_type_ids" in choice[0] else None
+        )
 
-#             if not (tok_start_position >= doc_start and tok_end_position <= doc_end):
-#                 out_of_span = True
-
-#             if out_of_span:
-#                 start_position = cls_index
-#                 end_position = cls_index
-#                 span_is_impossible = True
-#             else:
-#                 if tokenizer.padding_side == "left":
-#                     doc_offset = 0
-#                 else:
-#                     doc_offset = len(truncated_query) + sequence_added_tokens
-
-#                 start_position = tok_start_position - doc_start + doc_offset
-#                 end_position = tok_end_position - doc_start + doc_offset
-
-#         features.append(
-#             SquadFeatures(
-#                 span["input_ids"],
-#                 span["attention_mask"],
-#                 span["token_type_ids"],
-#                 cls_index,
-#                 p_mask.tolist(),
-#                 example_index=0,  # Can not set unique_id and example_index here. They will be set after multiple processing.
-#                 unique_id=0,
-#                 paragraph_len=span["paragraph_len"],
-#                 token_is_max_context=span["token_is_max_context"],
-#                 tokens=span["tokens"],
-#                 token_to_orig_map=span["token_to_orig_map"],
-#                 start_position=start_position,
-#                 end_position=end_position,
-#                 is_impossible=span_is_impossible,
-#                 qas_id=example.qas_id,
-#             )
-#         )
-#     return features
+        features.append(
+            InputFeatures(
+                example_id="123123123",
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                token_type_ids=token_type_ids,
+                label=label,
+            )
+        )
+    return features
 
 
 
 processors = {"semeval" : SemEvalProcessor, 'semevalenhanced' : SemEvalEnhancedProcessor}
 MULTIPLE_CHOICE_TASKS_NUM_LABELS = {"race", 4, "swag", 4, "arc", 4, "syn", 5, "semeval" , 5, "semevalenhanced", 6}
+
+if __name__ == '__main__':
+    tokenizer = RobertaTokenizer.from_pretrained('/home/xx/pretrained_model/roberta-large')
+
+    pass

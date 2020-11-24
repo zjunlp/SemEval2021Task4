@@ -41,7 +41,7 @@ from transformers import (
     LongformerModel,
     RobertaForMultipleChoice
 )
-from utils import MultipleChoiceDataset, Split, processors
+from utils import MultipleChoiceDataset, Split, processors, MultipleChoiceSlidingDataset
 from utils import Trainer
 
 
@@ -93,6 +93,10 @@ class DataTrainingArguments:
         default=False, metadata={"help": "Overwrite the cached training and evaluation sets"}
     )
     eval_all_checkpoints: bool = field(
+        default=False, 
+    )
+
+    sliding_window: bool = field(
         default=False, 
     )
 
@@ -173,31 +177,59 @@ def main():
         )
 
     # Get datasets
-    train_dataset = (
-        MultipleChoiceDataset(
-            data_dir=data_args.data_dir,
-            tokenizer=tokenizer,
-            task=data_args.task_name,
-            max_seq_length=data_args.max_seq_length,
-            overwrite_cache=data_args.overwrite_cache,
-            mode=Split.train,
+    if data_args.sliding_window:
+        train_dataset = (
+            MultipleChoiceSlidingDataset(
+                data_dir=data_args.data_dir,
+                tokenizer=tokenizer,
+                task=data_args.task_name,
+                max_seq_length=data_args.max_seq_length,
+                overwrite_cache=data_args.overwrite_cache,
+                mode=Split.train,
+            )
+            if training_args.do_train
+            else None
         )
-        if training_args.do_train
-        else None
-    )
-    eval_dataset = (
-        MultipleChoiceDataset(
-            data_dir=data_args.data_dir,
-            tokenizer=tokenizer,
-            task=data_args.task_name,
-            max_seq_length=data_args.max_seq_length,
-            overwrite_cache=data_args.overwrite_cache,
-            mode=Split.dev,
+        eval_dataset = (
+            MultipleChoiceSlidingDataset(
+                data_dir=data_args.data_dir,
+                tokenizer=tokenizer,
+                task=data_args.task_name,
+                max_seq_length=data_args.max_seq_length,
+                overwrite_cache=data_args.overwrite_cache,
+                mode=Split.dev,
+            )
+            if training_args.do_eval
+            else None
         )
-        if training_args.do_eval
-        else None
-    )
 
+    else:
+        train_dataset = (
+            MultipleChoiceDataset(
+                data_dir=data_args.data_dir,
+                tokenizer=tokenizer,
+                task=data_args.task_name,
+                max_seq_length=data_args.max_seq_length,
+                overwrite_cache=data_args.overwrite_cache,
+                mode=Split.train,
+            )
+            if training_args.do_train
+            else None
+        )
+        eval_dataset = (
+            MultipleChoiceDataset(
+                data_dir=data_args.data_dir,
+                tokenizer=tokenizer,
+                task=data_args.task_name,
+                max_seq_length=data_args.max_seq_length,
+                overwrite_cache=data_args.overwrite_cache,
+                mode=Split.dev,
+            )
+            if training_args.do_eval
+            else None
+        )
+
+    
     def compute_metrics(p: EvalPrediction) -> Dict:
         preds = np.argmax(p.predictions, axis=1)
         return {"acc": simple_accuracy(preds, p.label_ids)}

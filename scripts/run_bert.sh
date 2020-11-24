@@ -6,7 +6,7 @@ model='bert-base-uncased'
 MODEL_NAME_OR_PATH="/home/xx/pretrained_model/"${model}
 
 
-SEMEVAL_DIR="./dataset/training_data"
+SEMEVAL_DIR="./dataset/task1"
 SEMEVAL_DIR_TASK2="./dataset/task2"
 
 model_path='roberta_semeval_test1/checkpoint-7500'
@@ -18,6 +18,7 @@ CUDA_VISIBLE_DEVICES=2 python \
         --model_name_or_path ${MODEL_NAME_OR_PATH} \
         --do_train \
         --do_eval \
+        --sliding_window \
         --eval_all_checkpoints \
         --data_dir $SEMEVAL_DIR \
         --learning_rate 1e-5 \
@@ -31,7 +32,8 @@ CUDA_VISIBLE_DEVICES=2 python \
         --load_best_model_at_end  \
         --evaluate_during_training   \
         --overwrite_output_dir  \
-        --eval_steps 100
+        --eval_steps 100 \
+        --overwrite_cache
 
 
 
