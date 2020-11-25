@@ -171,7 +171,7 @@ if is_torch_available():
                     str(max_seq_length),
                     task,
                 ),
-            )
+            )+"sliding_window"
 
             # Make sure only the first process in distributed training processes the dataset,
             # and the others will use the cache.
@@ -433,7 +433,7 @@ def _is_whitespace(c):
         return True
     return False
 
-
+#TODO 使用多线程 模仿huggingface 中的实现
 def sliding_convert_examples_to_features(
     examples: List[InputExample],
     label_list: List[str],
@@ -578,6 +578,8 @@ def semeval_convert_example_to_features(
                 break
             span_doc_tokens = encoded_dict["overflowing_tokens"]
 
+        if len(spans) > 1:
+            import IPython; IPython.embed(); exit(1)
         choice_inputs[ending_idx] = spans
     features = []
     # 确保所有的输入是长度一样的
