@@ -578,14 +578,12 @@ def semeval_convert_example_to_features(
                 break
             span_doc_tokens = encoded_dict["overflowing_tokens"]
 
-        if len(spans) > 1:
-            import IPython; IPython.embed(); exit(1)
         choice_inputs[ending_idx] = spans
     features = []
     # 确保所有的输入是长度一样的
+    lens = len(choice_inputs[0])
     for a in choice_inputs:
-        for b in choice_inputs:
-            assert len(a) == len(b)
+        lens = min(lens, len(a))
     for i in range(len(choice_inputs[0])):
         choice = [] 
         for a in choice_inputs:

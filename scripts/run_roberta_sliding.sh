@@ -15,6 +15,7 @@ DATA_DIR=$SEMEVAL_DIR_TASK1
 CUDA_VISIBLE_DEVICES=1 python \
         run_roberta.py \
         --task_name semeval \
+        --sliding_window \
         --model_name_or_path ${MODEL_NAME_OR_PATH} \
         --do_train \
         --do_eval \
