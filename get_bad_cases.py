@@ -22,27 +22,24 @@ parser.add_argument('--max_seq_length', type=int, help='an integer for the accum
 args = parser.parse_args()
 
 device = 'cuda'
-config = AutoConfig.from_pretrained(
-    args.model_name_or_path,
-    num_labels = 6,
-)
-model = AutoModelForMultipleChoice.from_pretrained(args.model_name_or_path, config = config).to(device)
+model = AutoModelForMultipleChoice.from_pretrained(args.model_name_or_path).to(device)
 model.eval()
-tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path)
+albert_path = "/home/xx/pretrained_model/roberta-large"
+tokenizer = AutoTokenizer.from_pretrained(albert_path)
 
 eval_dataset = MultipleChoiceDataset(
     data_dir=args.data_dir,
     tokenizer=tokenizer,
     task='semeval',
     max_seq_length=args.max_seq_length,
-    overwrite_cache=False,
+    overwrite_cache=True,
     mode=Split.dev,
 )
 
 eval_dataloader = DataLoader(
     eval_dataset,
     sampler=SequentialSampler(eval_dataset),
-    batch_size=8,
+    batch_size=1,
     drop_last=False,
     collate_fn=default_data_collator,
     num_workers=8,
@@ -98,7 +95,7 @@ import os
 #     pickle.dump(bad_cases, writer)
 
 wrong_list = []
-
+cnt = 0
 with open(os.path.join(args.data_dir,'dev.jsonl') ,'r', encoding='UTF-8') as reader:
     for line_id,line in enumerate(reader.readlines()):
         t = json.loads(line)
@@ -107,12 +104,15 @@ with open(os.path.join(args.data_dir,'dev.jsonl') ,'r', encoding='UTF-8') as rea
             t['wrong_label'] = op
             t['logits'] = bad_cases[line_id]
             wrong_list.append(t)
+            cnt += 1
 
+assert cnt == cor
 
-with open(os.path.join(args.model_name_or_path,'wrong_answer.json'), 'a', encoding='UTF-8') as writer:
+with open(os.path.join(args.model_name_or_path,'wrong_answer.json'), 'w', encoding='UTF-8') as writer:
     writer.writelines('\n-------------' +args.data_dir + '----------\n')
     for w in wrong_list:
-        writer.writelines(json.dumps(w) + '\n')
+        # ensure_ascii=False is important to avoid the luanma
+        writer.writelines(json.dumps(w, ensure_ascii=False) + '\n')
 
 
 
