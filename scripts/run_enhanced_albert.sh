@@ -1,5 +1,6 @@
 model='albert-xxlarge-v2'
-MODEL_NAME_OR_PATH="/home/xx/pretrained_model/"${model}
+MODEL_NAME_jjuuihOR_PATH="/home/xx/pretrained_model/"${model}
+
 SEMEVAL_DIR_TASK1="./dataset/enhanced_albert_task1"
 
 TASK_NAME="semevalenhanced"
@@ -13,7 +14,7 @@ CUDA_VISIBLE_DEVICES=2 python    run_roberta.py \
         --do_train \
         --do_eval \
         --data_dir $SEMEVAL_DIR_TASK1 \
-        --learning_rate 1e-5 \
+        --learning_rate 5e-6 \
         --num_train_epochs 8 \
         --max_seq_length 128 \
         --output_dir ${OUTPUT_DIR} \
