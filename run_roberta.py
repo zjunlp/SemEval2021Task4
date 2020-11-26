@@ -2,7 +2,6 @@
 import glob
 import torch
 from transformers.modeling_auto import AutoModel
-from transformers.modeling_roberta import RobertaForMultipleChoiceModifed
 # Copyright 2018 The Google AI Language Team Authors and The HuggingFace Inc. team.
 # Copyright (c) 2018, NVIDIA CORPORATION.  All rights reserved.
 #

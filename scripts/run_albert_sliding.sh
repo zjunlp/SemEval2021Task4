@@ -8,7 +8,7 @@ SEMEVAL_DIR_TASK2="./dataset/task2"
 TRAIN_1_DEV_2="./dataset/train_1_dev_2"
 
 OUTPUT_DIR=./output/${model}_task1_128_test
-DATA_DIR=${TRAIN_1_DEV_2}
+DATA_DIR=${SEMEVAL_DIR_TASK1}
 # -m torch.distributed.launch --nproc_per_node=1  --nnodes=1
 # lr = 1e-5 get the result
 
@@ -22,7 +22,7 @@ CUDA_VISIBLE_DEVICES=2 python \
         --eval_all_checkpoints \
         --data_dir $DATA_DIR \
         --learning_rate 5e-6 \
-        --num_train_epochs 10 \
+        --num_train_epochs 4 \
         --max_seq_length 128 \
         --output_dir  $OUTPUT_DIR \
         --save_steps 500 \
