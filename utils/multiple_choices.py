@@ -30,7 +30,7 @@ from typing import List, Optional
 import tqdm
 
 from filelock import FileLock
-from transformers import PreTrainedTokenizer, is_tf_available, is_torch_available, AlbertTokenizer, RobertaTokenizer, BertTokenizer
+from transformers import PreTrainedTokenizer, is_tf_available, is_torch_available, AlbertTokenizer, RobertaTokenizer, BertTokenizer, AlbertForMultipleChoice
 from transformers.tokenization_utils_base import BatchEncoding, PreTrainedTokenizerBase, TruncationStrategy
 
 
@@ -228,6 +228,9 @@ class DataProcessor:
 
 
 
+"""
+example.example_id based on the line_id of case in the json file
+"""
 class SemEvalProcessor(DataProcessor):
     """Processor for the SWAG data set."""
 
@@ -267,7 +270,7 @@ class SemEvalProcessor(DataProcessor):
 
         examples = [
             InputExample(
-                example_id= '111' + str(_),
+                example_id= str(_),
                 question= d['question'],  # in the swag dataset, the
                 # common beginning of each
                 # choice is stored in "sent2".
@@ -285,6 +288,7 @@ class SemEvalProcessor(DataProcessor):
         return t * 5
 
 class SemEvalEnhancedProcessor(DataProcessor):
+
     """Processor for the SWAG data set."""
 
     def get_train_examples(self, data_dir):
@@ -324,7 +328,7 @@ class SemEvalEnhancedProcessor(DataProcessor):
         if type == 'train':
             examples = [
                 InputExample(
-                    example_id= '111' + str(_),
+                    example_id= str(_),
                     question= d['question'],  # in the swag dataset, the
                     # common beginning of each
                     # choice is stored in "sent2".
@@ -337,7 +341,7 @@ class SemEvalEnhancedProcessor(DataProcessor):
         else:
             examples = [
                 InputExample(
-                    example_id= '111' + str(_),
+                    example_id= str(_),
                     question= d['question'],  # in the swag dataset, the
                     # common beginning of each
                     # choice is stored in "sent2".
@@ -349,8 +353,6 @@ class SemEvalEnhancedProcessor(DataProcessor):
             ]
 
         return examples
-
-
 
 # modify 
 def convert_examples_to_features(
@@ -427,11 +429,6 @@ def convert_examples_to_features(
 
     return features
 
-
-def _is_whitespace(c):
-    if c == " " or c == "\t" or c == "\r" or c == "\n" or ord(c) == 0x202F:
-        return True
-    return False
 
 #TODO 使用多线程 模仿huggingface 中的实现
 def sliding_convert_examples_to_features(
@@ -600,7 +597,7 @@ def semeval_convert_example_to_features(
 
         features.append(
             InputFeatures(
-                example_id="123123123",
+                example_id=example.example_id,
                 input_ids=input_ids,
                 attention_mask=attention_mask,
                 token_type_ids=token_type_ids,

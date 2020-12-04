@@ -12,7 +12,7 @@ DATA_DIR=$SEMEVAL_DIR_TASK1
 
 
 #  -m torch.distributed.launch --nproc_per_node=1  --nnodes=1\
-CUDA_VISIBLE_DEVICES=1 python \
+CUDA_VISIBLE_DEVICES=2 python \
         run_roberta.py \
         --task_name semeval \
         --sliding_window \
@@ -25,10 +25,10 @@ CUDA_VISIBLE_DEVICES=1 python \
         --num_train_epochs ${epochs} \
         --max_seq_length ${max_seq_length} \
         --output_dir ${OUTPUT_DIR} \
-        --save_steps 2000 \
+        --save_steps 500 \
         --logging_dir $OUTPUT_DIR \
         --eval_steps 500 \
-        --per_device_eval_batch_size=8 \
+        --per_device_eval_batch_size=1 \
         --per_device_train_batch_size=1 \
         --gradient_accumulation_steps 1 \
         --overwrite_output  \

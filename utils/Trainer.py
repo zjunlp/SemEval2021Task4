@@ -874,10 +874,10 @@ class Trainer:
 
     def _save_training(self, model, trial, metrics=None):
         # In all cases (even distributed/parallel), self.model is always a reference
-        # to the model we want to save.
+        # to the model we want to save. w
         if hasattr(model, "module"):
             assert model.module is self.model, f"Module {model.module} should be a reference to self.model"
-        else:
+        else: 
             assert model is self.model, f"Model {model} should be a reference to self.model"
         # Save model checkpoint
         checkpoint_folder = f"{PREFIX_CHECKPOINT_DIR}-{self.global_step}"
@@ -1261,6 +1261,7 @@ class Trainer:
         ordering_and_checkpoint_path = []
 
         glob_checkpoints = [str(x) for x in Path(self.args.output_dir).glob(f"{checkpoint_prefix}-*")]
+        import IPython; IPython.embed(); exit(1)
 
         for path in glob_checkpoints:
             if use_mtime:
@@ -1282,7 +1283,7 @@ class Trainer:
         return checkpoints_sorted
 
     def _rotate_checkpoints(self, use_mtime=False) -> None:
-        if self.args.save_total_limit is None or self.args.save_total_limit <= 0:
+        if self.args.save_total_limit is None or self.args.save_total_limit >= 0:
             return
 
         # Check if we should delete older checkpoint(s)
@@ -1315,7 +1316,10 @@ class Trainer:
         """
         eval_dataloader = self.get_eval_dataloader(eval_dataset)
 
-        output = self.prediction_loop(eval_dataloader, description="Evaluation")
+        if not self.args.sliding_window:
+            output = self.prediction_loop(eval_dataloader, description="Evaluation")
+        else:
+            output = self._evaluate_sliding_window(eval_dataloader, self.eval_dataset)
 
         self.log(output.metrics)
 
@@ -1324,6 +1328,70 @@ class Trainer:
             xm.master_print(met.metrics_report())
 
         return output.metrics
+
+    def _evaluate_sliding_window(self, eval_dataloader, eval_dataset):   
+        model = self.model
+        def eval_step(inputs,):
+            inputs = self._prepare_inputs(inputs)
+            with torch.no_grad():
+                outputs = model(**inputs)
+                logits = outputs[1:]
+            
+            logits = tuple(logit.detach() for logit in logits)
+            if len(logits) == 1:
+                logits = logits[0]
+            
+            labels = tuple(inputs.get(name).detach() for name in ['labels'])
+            if len(labels) == 1:
+                labels = labels[0]
+
+            return (logits, labels)
+
+        def count_answer(answer):
+            """
+            answer : List[int]
+            return : 出现最多的数字 means the answer
+            """
+            assert answer.shape[0] > 0
+            res = np.argmax(np.bincount(answer))
+            return res
+
+        num_sample = len(eval_dataset)
+        answer_list = [None] * num_sample
+        # 开始输出
+        idx = 0
+        real_answer = [None] * num_sample
+        answer = [] 
+        for inputs in tqdm(eval_dataloader):
+            logits, labels = eval_step(inputs)
+            logits_temp = torch.argmax(logits,dim = 1)
+            example_idx = int(eval_dataset[idx].example_id)
+            real_answer[example_idx] = labels.item()
+            l = logits_temp.item()
+            if answer_list[example_idx] is not None:
+                answer_list[example_idx].append(l)
+            else:
+                answer_list[example_idx] = [l]
+            idx += 1
+        for a in answer_list:
+            if a is None:
+                break
+            answer.append(count_answer(np.array(a)))
+
+        
+        # convert to ndarray to compute acc
+        answer = np.array(answer)
+        real_answer = np.array(real_answer)
+        real_answer = real_answer[:answer.shape[0]]
+
+        acc = (answer == real_answer).mean()
+
+
+        #TODO eval_loss 加入到其中
+        metrics = {"eval_acc" : acc, "eval_loss" : 0.618}
+        
+        return PredictionOutput(predictions=answer, label_ids=real_answer, metrics=metrics)
+
 
     def predict(self, test_dataset: Dataset) -> PredictionOutput:
         """

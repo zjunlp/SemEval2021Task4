@@ -1,5 +1,5 @@
 model='albert-xxlarge-v2'
-MODEL_NAME_jjuuihOR_PATH="/home/xx/pretrained_model/"${model}
+MODEL_NAME_OR_PATH="/home/xx/pretrained_model/"${model}
 
 SEMEVAL_DIR_TASK1="./dataset/enhanced_albert_task1"
 

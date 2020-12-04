@@ -1,5 +1,6 @@
 from logging import debug
 import copy
+from os import write
 import torch
 from tqdm import tqdm
 import os
@@ -166,6 +167,19 @@ batch_size = 16
 
 file_path = './dataset/enhanced_roberta_task2/train.jsonl'
 
-add_new_option(file_path)
+# add_new_option(file_path)
 
+# save answer file sorted by id
+# label 0,1,2,3,4
+def get_answer(file_path):
+    answer_dict = {}
+    answer_dict['labels'] = []
+    with open(file_path, 'r') as file:
+        for idx,line in enumerate(file.readlines()):
+            t_json = json.loads(line)
+            answer_dict['labels'].append(t_json['label'])
 
+    with open(file_path.replace('.jsonl', '_answer.jsonl'), 'w') as writer:
+        writer.write(json.dumps(answer_dict))
+
+get_answer('./dataset/task1/dev.jsonl')

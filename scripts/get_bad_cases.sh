@@ -1,4 +1,4 @@
-MODEL_PATH="./saved_model_file/roberta_task2"
+MODEL_PATH="./output/albert-xxlarge-v2_task1_128_sliding_window/checkpoint-33500"
 
 
 

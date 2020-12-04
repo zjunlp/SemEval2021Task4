@@ -5,9 +5,8 @@ MODEL_NAME_OR_PATH="/home/xx/pretrained_model/"${model}
 
 SEMEVAL_DIR_TASK1="./dataset/task1"
 SEMEVAL_DIR_TASK2="./dataset/task2"
-TRAIN_1_DEV_2="./dataset/train_1_dev_2"
 
-OUTPUT_DIR=./output/${model}_task1_128_test
+OUTPUT_DIR=./output/${model}_task1_128_sliding_window
 DATA_DIR=${SEMEVAL_DIR_TASK1}
 # -m torch.distributed.launch --nproc_per_node=1  --nnodes=1
 # lr = 1e-5 get the result
@@ -32,7 +31,7 @@ CUDA_VISIBLE_DEVICES=2 python \
         --per_device_train_batch_size=1 \
         --gradient_accumulation_steps 1 \
         --evaluate_during_training    \
-        --overwrite_cache
+        --overwrite_output_dir 
 
 
 

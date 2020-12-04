@@ -35,13 +35,12 @@ from transformers import (
     AutoTokenizer,
     EvalPrediction,
     HfArgumentParser,
-    TrainingArguments,
     set_seed,
     LongformerModel,
     RobertaForMultipleChoice
 )
 from utils import MultipleChoiceDataset, Split, processors, MultipleChoiceSlidingDataset
-from utils import Trainer
+from utils import Trainer, TrainingArguments
 
 
 logger = logging.getLogger(__name__)
@@ -94,12 +93,6 @@ class DataTrainingArguments:
     eval_all_checkpoints: bool = field(
         default=False, 
     )
-
-    sliding_window: bool = field(
-        default=False, 
-    )
-
-
 def main():
     # See all possible arguments in src/transformers/training_args.py
     # or by passing the --help flag to this script.
@@ -176,7 +169,7 @@ def main():
         )
 
     # Get datasets
-    if data_args.sliding_window:
+    if training_args.sliding_window:
         train_dataset = (
             MultipleChoiceSlidingDataset(
                 data_dir=data_args.data_dir,
