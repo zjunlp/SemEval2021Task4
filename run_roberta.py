@@ -37,7 +37,8 @@ from transformers import (
     HfArgumentParser,
     set_seed,
     LongformerModel,
-    RobertaForMultipleChoice
+    RobertaForMultipleChoice,
+    AlbertForMultipleChoice
 )
 from utils import MultipleChoiceDataset, Split, processors, MultipleChoiceSlidingDataset
 from utils import Trainer, TrainingArguments

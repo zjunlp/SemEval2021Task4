@@ -1,5 +1,56 @@
 # semeval 思考
 
+## TODO
+
+1. `./run_enhanced.sh` 增强`Albert`在`task2`上的表现。 ---- 无显著提高，基本处于80~82准确率。
+2. ~~实现sliding window~~ 训练后的eval 环节如何处理，是多个sliding_window 投票？ 直接进行投票测试
+3. 错误样本 分布是否是长文本更容易错？ **反而是短文本更容易错**。
+
+----
+
+1. https://www.aclweb.org/anthology/2020.acl-main.603.pdf 这篇会不会有奇效？使用RNN + BERT，但是文中分析的错误分布和当前模型**不一致**，并不是越长的文章错误率越高。
+2. BART模型baseline测试
+
+## 试验
+
+albert 低学习率在task-2表现良好。86准确率。
+
+----
+
+~~测试text_a,text_b 的形式在各种模型上的效果，是否一致？ -》基本一样。~~
+
+2020.11.28 
+
+albert task1 enhanced
+
+albert task2 enhanced 
+
+---
+
+2020.11.30
+
+1. 争取实现 sliding window eval手段，使用投票方法
+2. ~~分析错误样本长度分布，是否是更长的问题更难回答。~~ 分析反而是长的答对得多
+3. 实现减少显存占用的方法， 用时间换空间。
+
+## bugs
+
+~~额外标签在`roberta-large`上dev测试分数78，但是一到semeval没有enhanced就低了很多，不知道为什么。~~ 重新tokenize了样本一下，就好了。。
+
+[question, article] 训练好的模型在[article, question] 下的效果很差，准确率只有原来的一半。
+
+## 尝试
+
+### sliding window
+
+将`sliding window`加入代码中，（但是可能会长文章产生更多的样本，是否会有问题？ eval的时候如何操作？） 对于每一个[question + article] 分隔成多个样本输入到模型进行训练。
+
+~~11.24 准备先跑个bert  试试效果~~。 `doc_stride=100 Albert` 结果准确率82，可能超参还要调试。
+
+### 负样本增强
+
+`roberta-large`效果不错，但`albert`模型上效果好像不太理想，仍然还在尝试。
+
 ## 思路
 
 1. 使用<mask>预测的东西，成为负样本，增大原样本个数。
@@ -14,9 +65,12 @@
 
 5. 继续针对相关领域的数据进行预训练。
 
-6. 在数据层面引入外部知识，做数据增强
 
 ## 数据分析
+
+### 数据构造方式
+
+https://zhuanlan.zhihu.com/p/21343662 语料的构建方法有可能是这样子的。先使用CNN文章片段，之后针对文章生成一个摘要，再挖出**抽象词汇**。类似于摘要，基本没有多跳推理。
 
 ### task-1
 
@@ -44,8 +98,6 @@
 
 [('group', 40), ('lost', 34), ('body', 34), ('team', 32), ('criticised', 27), ('held', 26), ('side', 24), ('show', 22), ('life', 21), ('launched', 21)]
 
-#### 
-
 --------------
 
 ### task-3
@@ -53,6 +105,8 @@
 ![image-20201109202145278](http://typoracheasim.test.upcdn.net/20201109202145.png)
 
 task-1,task-2 分布差不多。 task-3 交叉数据集不用截取，较为简单。
+
+#### top10选项
 
 [('major', 96), ('controversial', 62), ('confirmed', 62), ('latest', 56), ('rare', 49), ('special', 46), ('lost', 41), ('famous', 40), ('annual', 35), ('national', 35)]
 
@@ -80,23 +134,27 @@ task-1,task-2 分布差不多。 task-3 交叉数据集不用截取，较为简�
 
 Roberta-Large使用24层transformer encoder，在将[question, article] 拼接起来作为模型的输入，之后在`[cls]`输出拼接一个线性分类器，输出一个匹配的分数，对于五个`option`分别输入到模型中，最后经过`softmax`变换之后和原来的`label`计算交叉熵损失，进行反向传播作为训练。
 
+所有模型均使用[text_b, text_a]，先问题，后文章的形式。类似于推理？
+
 #### task-1 
 
 类似于culture 等词汇的预测。
 
-| dataset | Roberta-large | Albert-xxlarge |
-| ------- | ------------- | -------------- |
-| dev     | 75%           | 83%            |
+| dataset | Roberta-large | Albert-xxlarge | Roberta-large enhanced |
+| ------- | ------------- | -------------- | ---------------------- |
+| dev     | 75%           | 83%            | 78%                    |
 
 直接利用模型去预测[mask] Train  52.4%  Dev  56.8%
+
+task1在各种长度上的错误率大致相同，为啥？ 并且在更长的片段中准确率还**提高**了！
 
 #### task-2
 
 类似于涵盖内容更多 无脊椎动物的词汇。 问题更倾向于针对article的总结。 article 陈述一段事实，question 将上述的事实部分用一段语言表示，之后挖空了比较抽象的词汇。
 
-| dataset | Roberta-large | Albert-xxlarge |
-| ------- | ------------- | -------------- |
-| dev     | 83%           | 71%            |
+| dataset | Roberta-large | Albert-xxlarge | Albert-xxlarge enhanced | roberta-large | Albert                                |
+| ------- | ------------- | -------------- | ----------------------- | ------------- | ------------------------------------- |
+| dev     | 83%           | 86%            | 82.8%                   | 84.25         | 86.8 `./saved_model_file/albet_task2` |
 
 #### task-3
 
@@ -250,7 +308,7 @@ placeholder 在对文档做一次attention
 
 孪生网络， 
 
-模型保存，后续模型融合
+模型保存，后续模型融合 **stacking essemble** https://zhuanlan.zhihu.com/p/32896968
 
 融合context 上的知识。 找已有思路，试一试。pretrain 或者 Fine-tune作为额外特征。
 
@@ -267,3 +325,15 @@ test data 融入，预训练。 自评
 did you know wikipedia
 
 针对任务问题分类。 bad cases 分类， 探究是否有reasoning 问题，单跳，多跳。
+
+-----
+
+针对数据集特点，专门构造self-supervised 进行继续训练。类似于span-bert 针对mprc 。
+
+
+
+尝试更多的任务。
+
+1. 对这些预料进行 mask entity+继续预训练+fine-tune
+2. 更多的模型架构 孪生网络架构 few-shot learning 找最近领
+

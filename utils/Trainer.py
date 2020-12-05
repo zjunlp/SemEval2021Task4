@@ -54,7 +54,7 @@ from transformers.trainer_utils import (
     nested_xla_mesh_reduce,
     set_seed,
 )
-from transformers.training_args import TrainingArguments
+from utils.training_args import TrainingArguments
 from transformers.utils import logging
 
 
@@ -1283,6 +1283,7 @@ class Trainer:
         return checkpoints_sorted
 
     def _rotate_checkpoints(self, use_mtime=False) -> None:
+        # TODO some bugs, so ignore the _ratate_checkpoints
         if self.args.save_total_limit is None or self.args.save_total_limit >= 0:
             return
 

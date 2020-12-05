@@ -7,12 +7,13 @@ SEMEVAL_DIR_TASK2="./dataset/task2"
 learning_rate=5e-6
 epochs=4
 max_seq_length=128
-OUTPUT_DIR=./output/${model}_128_task1_sliding_window
-DATA_DIR=$SEMEVAL_DIR_TASK1
+DATA_DIR=$SEMEVAL_DIR_TASK2
+
+OUTPUT_DIR=./output/${model}_128_task2_sliding_window
 
 
 #  -m torch.distributed.launch --nproc_per_node=1  --nnodes=1\
-CUDA_VISIBLE_DEVICES=2 python \
+CUDA_VISIBLE_DEVICES=0 python \
         run_roberta.py \
         --task_name semeval \
         --sliding_window \
