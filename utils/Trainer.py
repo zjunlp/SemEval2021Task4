@@ -1329,7 +1329,7 @@ class Trainer:
             xm.master_print(met.metrics_report())
 
         return output.metrics
-
+ 
     def _evaluate_sliding_window(self, eval_dataloader, eval_dataset):   
         model = self.model
         def eval_step(inputs,):
@@ -1347,7 +1347,7 @@ class Trainer:
                 labels = labels[0]
 
             return (logits, labels)
-
+        
         def count_answer(answer):
             """
             answer : List[int]
@@ -1365,23 +1365,29 @@ class Trainer:
         answer = [] 
         for inputs in tqdm(eval_dataloader):
             logits, labels = eval_step(inputs)
-            logits_temp = torch.argmax(logits,dim = 1)
+            logits = torch.softmax(logits, dim = 1)
             example_idx = int(eval_dataset[idx].example_id)
             real_answer[example_idx] = labels.item()
-            l = logits_temp.item()
+            #l = logits_temp.item()
+            
             if answer_list[example_idx] is not None:
-                answer_list[example_idx].append(l)
+                answer_list[example_idx] += logits.cpu().squeeze(0).detach().numpy()
             else:
-                answer_list[example_idx] = [l]
+                answer_list[example_idx] = logits.cpu().squeeze(0).detach().numpy()
             idx += 1
-        for a in answer_list:
-            if a is None:
-                break
-            answer.append(count_answer(np.array(a)))
+        answer_list = torch.tensor(np.array(answer_list[:num_sample]))
+        # import IPython; IPython.embed(); exit(1)
+        answer_ttt = torch.argmax(answer_list, dim = 1).numpy()
+        
+        # for a in answer_list:
+        #     if a is None:
+        #         break
+        #     answer.append(count_answer(np.array(a)))
 
         
         # convert to ndarray to compute acc
-        answer = np.array(answer)
+        # answer = np.array(answer)
+        answer = answer_ttt
         real_answer = np.array(real_answer)
         real_answer = real_answer[:answer.shape[0]]
 

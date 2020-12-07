@@ -26,7 +26,7 @@ CUDA_VISIBLE_DEVICES=2 python \
         --output_dir  $OUTPUT_DIR \
         --save_steps 500 \
         --logging_dir $OUTPUT_DIR \
-        --eval_steps 500 \
+        --eval_steps 2 \
         --per_device_eval_batch_size=1 \
         --per_device_train_batch_size=1 \
         --gradient_accumulation_steps 1 \
