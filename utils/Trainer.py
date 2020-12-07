@@ -1347,15 +1347,6 @@ class Trainer:
                 labels = labels[0]
 
             return (logits, labels)
-        
-        def count_answer(answer):
-            """
-            answer : List[int]
-            return : 出现最多的数字 means the answer
-            """
-            assert answer.shape[0] > 0
-            res = np.argmax(np.bincount(answer))
-            return res
 
         num_sample = len(eval_dataset)
         answer_list = [None] * num_sample
@@ -1371,11 +1362,12 @@ class Trainer:
             #l = logits_temp.item()
             
             if answer_list[example_idx] is not None:
-                answer_list[example_idx] += logits.cpu().squeeze(0).detach().numpy()
+                answer_list[example_idx] += logits.cpu().squeeze(0).detach()
             else:
-                answer_list[example_idx] = logits.cpu().squeeze(0).detach().numpy()
+                answer_list[example_idx] = logits.cpu().squeeze(0).detach()           
             idx += 1
-        answer_list = torch.tensor(np.array(answer_list[:num_sample]))
+            num_sample = example_idx + 1
+        answer_list = torch.stack(answer_list[:num_sample], dim=0)
         # import IPython; IPython.embed(); exit(1)
         answer_ttt = torch.argmax(answer_list, dim = 1).numpy()
         

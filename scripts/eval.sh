@@ -30,7 +30,7 @@ CUDA_VISIBLE_DEVICES=1 python run_roberta.py \
         --do_eval \
         --data_dir  $task \
         --max_seq_length ${seq_len} \
-        --output_dir ${roberta_task1} \jj
+        --output_dir ${roberta_task1} \
         --per_device_eval_batch_size=1 
 
 
