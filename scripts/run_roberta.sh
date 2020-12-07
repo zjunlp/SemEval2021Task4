@@ -18,7 +18,7 @@ max_seq_length=128
 OUTPUT_DIR=./output/${model}_128_train_1_sliding_window
 
 #  -m torch.distributed.launch --nproc_per_node=1  --nnodes=1\
-CUDA_VISIBLE_DEVICES=1 python \
+CUDA_VISIBLE_DEVICES=2 python \
         run_roberta.py \
         --task_name semeval \
         --model_name_or_path ${MODEL_NAME_OR_PATH} \
@@ -37,4 +37,5 @@ CUDA_VISIBLE_DEVICES=1 python \
         --per_device_train_batch_size=1 \
         --gradient_accumulation_steps 1 \
         --overwrite_output  \
-        --evaluate_during_training    
+        --evaluate_during_training    \
+        --fp16 

@@ -13,7 +13,7 @@ OUTPUT_DIR=./output/${model}_128_task2_sliding_window
 
 
 #  -m torch.distributed.launch --nproc_per_node=1  --nnodes=1\
-CUDA_VISIBLE_DEVICES=0 python \
+CUDA_VISIBLE_DEVICES=2 python \
         run_roberta.py \
         --task_name semeval \
         --sliding_window \
