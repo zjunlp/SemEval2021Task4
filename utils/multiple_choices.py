@@ -385,12 +385,12 @@ def convert_examples_to_features(
             # for xlnet [text_a[:400], text_b] seq_length 480
             # TODO sliding window replace
             inputs = tokenizer(
-                text_b,
                 text_a,
+                text_b,
                 add_special_tokens=True,
                 max_length=max_length,
                 padding="max_length",
-                truncation="only_second",
+                truncation="only_first",
                 return_overflowing_tokens=True,
                 return_token_type_ids=True,
             )

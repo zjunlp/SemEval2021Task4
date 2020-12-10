@@ -11,12 +11,11 @@ DATA_DIR=${SEMEVAL_DIR_TASK2}
 # -m torch.distributed.launch --nproc_per_node=1  --nnodes=1
 # lr = 1e-5 get the result
 
-CUDA_VISIBLE_DEVICES=1 python \
+CUDA_VISIBLE_DEVICES=2 python \
         run_roberta.py \
         --task_name semeval \
         --sliding_window \
         --model_name_or_path ${MODEL_NAME_OR_PATH} \
-        --do_train \
         --do_eval \
         --eval_all_checkpoints \
         --data_dir $DATA_DIR \

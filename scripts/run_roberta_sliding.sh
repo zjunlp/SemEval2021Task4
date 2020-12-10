@@ -5,15 +5,15 @@ SEMEVAL_DIR_TASK2="./dataset/task2"
 # hyperparameter
 # lr = 1e-6 get the result
 learning_rate=5e-6
-epochs=4
-max_seq_length=128
-DATA_DIR=$SEMEVAL_DIR_TASK2
+epochs=5
+max_seq_length=256
+DATA_DIR=$SEMEVAL_DIR_TASK1
 
-OUTPUT_DIR=./output/${model}_128_task2_sliding_window
+OUTPUT_DIR=./output/${model}_128_task1_sliding_window_ab
 
 
 #  -m torch.distributed.launch --nproc_per_node=1  --nnodes=1\
-CUDA_VISIBLE_DEVICES=2 python \
+CUDA_VISIBLE_DEVICES=1 python \
         run_roberta.py \
         --task_name semeval \
         --sliding_window \
