@@ -138,3 +138,5 @@ runs/
 *.bin
 *.ckpt*
 cached*
+
+dataset/pretrain_dataset/

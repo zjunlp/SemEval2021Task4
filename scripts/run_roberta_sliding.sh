@@ -10,6 +10,7 @@ max_seq_length=256
 DATA_DIR=$SEMEVAL_DIR_TASK1
 
 OUTPUT_DIR=./output/${model}_128_task1_sliding_window_ab
+LOGGING_DIR=./logs/${model}_128_task1_sliding_window_ab
 
 
 #  -m torch.distributed.launch --nproc_per_node=1  --nnodes=1\
@@ -27,7 +28,7 @@ CUDA_VISIBLE_DEVICES=1 python \
         --max_seq_length ${max_seq_length} \
         --output_dir ${OUTPUT_DIR} \
         --save_steps 500 \
-        --logging_dir $OUTPUT_DIR \
+        --logging_dir $LOGGING_DIR \
         --eval_steps 500 \
         --per_device_eval_batch_size=1 \
         --per_device_train_batch_size=1 \
