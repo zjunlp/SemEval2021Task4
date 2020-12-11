@@ -13,4 +13,5 @@ CUDA_VISIBLE_DEVICES= python ./pretrain/pretrain.py \
     --do_eval \
     --output_dir $OUTPUT_DIR \
     --mlm \
-    --line_by_line  
+    --line_by_line  \
+    --overwrite_cache

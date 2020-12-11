@@ -25,7 +25,6 @@ from transformers import (
     DataCollatorForLanguageModeling,
     DataCollatorForPermutationLanguageModeling,
     HfArgumentParser,
-    LineByLineTextDataset,
     PreTrainedTokenizer,
     TextDataset,
     Trainer,
@@ -34,7 +33,8 @@ from transformers import (
 )
 sys.path.append('.')
 from utils import DataCollatorForWholeWordMask
-
+# modified from huggingface transformers
+from .pretrain_utils import LineByLineTextDataset
 def is_main_process(local_rank):
     """
     Whether or not the current process is the local process, based on `xm.get_ordinal()` (for TPUs) first, then on
