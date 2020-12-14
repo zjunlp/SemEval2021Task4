@@ -12,7 +12,7 @@ from transformers.modeling_auto import AutoModel
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
+# distributed under the License is distributed on an "AS IS" BIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
@@ -68,9 +68,6 @@ class ModelArguments:
     )
     cache_dir: Optional[str] = field(
         default=None, metadata={"help": "Where do you want to store the pretrained models downloaded from s3"}
-    )
-    modified: bool = field(
-        default=False
     )
 
 @dataclass
@@ -154,20 +151,12 @@ def main():
         model_args.tokenizer_name if model_args.tokenizer_name else model_args.model_name_or_path,
         cache_dir=model_args.cache_dir,
     )
-    if model_args.modified:
-        model = RobertaForMultipleChoiceModifed.from_pretrained(
-            model_args.model_name_or_path,
-            from_tf=bool(".ckpt" in model_args.model_name_or_path),
-            config=config,
-            cache_dir=model_args.cache_dir,
-        )
-    else:
-        model = AutoModelForMultipleChoice.from_pretrained(
-            model_args.model_name_or_path,
-            from_tf=bool(".ckpt" in model_args.model_name_or_path),
-            config=config,
-            cache_dir=model_args.cache_dir,
-        )
+    model = AutoModelForMultipleChoice.from_pretrained(
+        model_args.model_name_or_path,
+        from_tf=bool(".ckpt" in model_args.model_name_or_path),
+        config=config,
+        cache_dir=model_args.cache_dir,
+    )
 
     # Get datasets
     if training_args.sliding_window:
@@ -304,8 +293,7 @@ def main():
                 global_step = checkpoint.split("-")[-1] if len(checkpoints) > 1 else ""
 
 
-                model = AutoModelForMultipleChoice.from_pretrained(checkpoint)  \
-                if not model_args.modified else RobertaForMultipleChoiceModifed.from_pretrained(checkpoint)
+                model = AutoModelForMultipleChoice.from_pretrained(checkpoint)  
                 trainer = Trainer(
                     model=model,
                     args=training_args,
