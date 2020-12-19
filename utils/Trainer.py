@@ -816,7 +816,7 @@ class Trainer:
                         self._report_to_hp_search(trial, epoch, metrics)
 
                         operator = np.greater if self.args.greater_is_better else np.less
-                        if self.state.best_metric == None or self.state.best_metric < metrics['eval_acc']:
+                        if self.state.best_metric == None or (self.state.best_metric < metrics['eval_acc'] and metrics['eval_acc'] > 0.8):
                             self._save_training(model, trial, metrics=metrics)
 
                     # default we eval the model every self.eval_steps 
