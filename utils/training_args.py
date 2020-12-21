@@ -234,7 +234,7 @@ class TrainingArguments:
     adam_beta2: float = field(default=0.999, metadata={"help": "Beta2 for Adam optimizer"})
     adam_epsilon: float = field(default=1e-8, metadata={"help": "Epsilon for Adam optimizer."})
     max_grad_norm: float = field(default=1.0, metadata={"help": "Max gradient norm."})
-
+    lr_scheduler: str = field(default='cos')
     num_train_epochs: float = field(default=3.0, metadata={"help": "Total number of training epochs to perform."})
     max_steps: int = field(
         default=-1,

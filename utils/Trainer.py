@@ -34,7 +34,7 @@ from transformers.integrations import (
 )
 from transformers.modeling_auto import MODEL_FOR_QUESTION_ANSWERING_MAPPING
 from transformers.modeling_utils import PreTrainedModel
-from transformers.optimization import AdamW, get_linear_schedule_with_warmup
+from transformers.optimization import AdamW, get_linear_schedule_with_warmup,get_cosine_schedule_with_warmup,get_polynomial_decay_schedule_with_warmup
 from transformers.tokenization_utils_base import PreTrainedTokenizerBase
 from transformers.trainer_utils import (
     PREFIX_CHECKPOINT_DIR,
@@ -460,7 +460,8 @@ class Trainer:
                 eps=self.args.adam_epsilon,
             )
         if self.lr_scheduler is None:
-            self.lr_scheduler = get_linear_schedule_with_warmup(
+            scheduler_dict={"linear":get_linear_schedule_with_warmup,"cos":get_cosine_schedule_with_warmup,"poly":get_polynomial_decay_schedule_with_warmup}
+            self.lr_scheduler = scheduler_dict.get(self.args.lr_scheduler,"NOT FOUND")(
                 self.optimizer, num_warmup_steps=self.args.warmup_steps, num_training_steps=num_training_steps
             )
 
