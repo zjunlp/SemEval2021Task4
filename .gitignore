@@ -134,7 +134,7 @@ saved_model_file/
 
 output/
 runs/
-
+test/
 *.bin
 *.ckpt*
 cached*
