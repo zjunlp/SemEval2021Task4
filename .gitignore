@@ -139,4 +139,8 @@ test/
 *.ckpt*
 cached*
 
+test/scripts/
+good_models/
+logs/
+
 dataset/pretrain_dataset/

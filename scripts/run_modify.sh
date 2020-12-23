@@ -11,7 +11,7 @@ MODEL_NAME_OR_PATH="/home/xx/pretrained_model/"${model}
 
 SEMEVAL_DIR="./dataset/training_data"
 
-CUDA_VISIBLE_DEVICES=2 python -m torch.distributed.launch \
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch \
                 --nproc_per_node=1 \
                 --nnodes=1  \
         run_roberta.py \
