@@ -103,6 +103,27 @@ def clean_data(text):
     a = a.replace("-rrb-", " ")
     return a
 
+#TODO 有点丑陋 而且token个数也是固定死的，需要加args
+def divide_data(text):
+    temp = []
+    words_list = text.split()
+    if len(words_list) < 200:
+        return [text]
+    else:
+        sentence_list = text.split('.')
+        total_sentence = len(sentence_list)
+        now_sentence_id = 0
+        t_sentence = ""
+        while now_sentence_id < total_sentence :
+            if len((t_sentence + sentence_list[now_sentence_id]).split()) > 200:
+                temp.append(t_sentence)
+                t_sentence = ""
+            else:
+                t_sentence += " . " + sentence_list[now_sentence_id]
+                now_sentence_id += 1
+
+    return temp
+
 
 def convert_token(token):
     """ Convert PTB tokens to normal tokens """
@@ -139,6 +160,10 @@ class LineByLineTextDataset(Dataset):
         with open(file_path, encoding="utf-8") as f:
             examples = [line for line in f.read().splitlines() if (len(line) > 0 and not line.isspace())]
             examples = [clean_data(example) for example in examples]
+            t_examples = []
+            for example in examples:
+                t_examples += divide_data(example)
+            examples = t_examples
         threads = min(16, cpu_count()//2)
 
         logger.info("Creating features from dataset file at %s", file_path)
