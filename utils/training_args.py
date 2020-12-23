@@ -10,12 +10,7 @@ from transformers.file_utils import cached_property, is_torch_available, is_torc
 from transformers.trainer_utils import EvaluationStrategy
 from transformers.utils import logging
 
-
-if is_torch_available():
-    import torch
-
-if is_torch_tpu_available():
-    import torch_xla.core.xla_model as xm
+import torch
 
 
 logger = logging.get_logger(__name__)
@@ -234,7 +229,7 @@ class TrainingArguments:
     adam_beta2: float = field(default=0.999, metadata={"help": "Beta2 for Adam optimizer"})
     adam_epsilon: float = field(default=1e-8, metadata={"help": "Epsilon for Adam optimizer."})
     max_grad_norm: float = field(default=1.0, metadata={"help": "Max gradient norm."})
-    lr_scheduler: str = field(default='cos')
+    lr_scheduler: str = field(default='cos', metadata={"help": "adjust the scheduler "})
     num_train_epochs: float = field(default=3.0, metadata={"help": "Total number of training epochs to perform."})
     max_steps: int = field(
         default=-1,

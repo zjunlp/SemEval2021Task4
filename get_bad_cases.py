@@ -1,3 +1,4 @@
+import enum
 from torch.utils.data import dataloader
 import json
 from transformers.configuration_auto import AutoConfig
@@ -24,6 +25,7 @@ parser.add_argument('--sliding_window', help='an integer for the accumulator', d
 parser.add_argument('--task_name',type=str,  help='an integer for the accumulator', default="semeval" )
 parser.add_argument('--overwrite_cache', help='overwrite_cache', default=False,action="store_true" )
 parser.add_argument("--answer_list", nargs="+", default=["a", "b"], help="answer pickle")
+parser.add_argument("--model_list", nargs="+", default=["a", "b"], help="model list")
 
 args = parser.parse_args()
 
@@ -33,9 +35,34 @@ model.eval()
 albert_path = "/home/xx/pretrained_model/albert-xxlarge-v2"
 tokenizer = AutoTokenizer.from_pretrained(albert_path)
 
-if args.sliding_window:
-    eval_dataset = (
-        MultipleChoiceSlidingDataset(
+
+# only need path
+tokenizer_path = {"albert" : "/home/xx/pretrained_model/albert-xxlarge-v2", "roberta": "/home/xx/pretrained_model/roberta-large", "xlnet":"/home/xx/pretrained_model/xlnet-large-cased"}
+
+def judge_model(model_name):
+    if "albert" in model_name:
+        return "albert"
+    elif "roberta" in model_name:
+        return "roberta"
+    elif "xlnet" in model_name:
+        return "xlnet"
+    else:
+        assert 1 == 2, "no model in model_name"
+
+def get_dataloader(tokenizer):
+    if args.sliding_window:
+        eval_dataset = (
+            MultipleChoiceSlidingDataset(
+                data_dir=args.data_dir,
+                tokenizer=tokenizer,
+                task=args.task_name,
+                max_seq_length=args.max_seq_length,
+                overwrite_cache=args.overwrite_cache,
+                mode=Split.dev,
+            )
+        )
+    else:
+        eval_dataset = MultipleChoiceDataset(
             data_dir=args.data_dir,
             tokenizer=tokenizer,
             task=args.task_name,
@@ -43,25 +70,17 @@ if args.sliding_window:
             overwrite_cache=args.overwrite_cache,
             mode=Split.dev,
         )
-    )
-else:
-    eval_dataset = MultipleChoiceDataset(
-        data_dir=args.data_dir,
-        tokenizer=tokenizer,
-        task=args.task_name,
-        max_seq_length=args.max_seq_length,
-        overwrite_cache=args.overwrite_cache,
-        mode=Split.dev,
-    )
 
-eval_dataloader = DataLoader(
-    eval_dataset,
-    sampler=SequentialSampler(eval_dataset),
-    batch_size=8,
-    drop_last=False,
-    collate_fn=default_data_collator,
-    num_workers=8,
-)
+    eval_dataloader = DataLoader(
+        eval_dataset,
+        sampler=SequentialSampler(eval_dataset),
+        batch_size=8,
+        drop_last=False,
+        collate_fn=default_data_collator,
+        num_workers=8,
+    )
+    return eval_dataloader
+
 def _prepare_inputs(inputs: Dict[str, Union[torch.Tensor, Any]]) -> Dict[str, Union[torch.Tensor, Any]]:
     """
     Prepare :obj:`inputs` before feeding them to the model, converting them to tensors if they are not already and
@@ -97,19 +116,19 @@ def count_answer(answer):
     res = np.argmax(np.bincount(answer))
     return res
 
-cnt = 0
-bad_cases = []
-t = []
-softm = torch.nn.Softmax(dim = 1)
-num_sample = len(eval_dataset)
-"""
-小心 num_sample > example_idx  因为每一个example分成了很多个sample
-"""
-answer_list = [None] * num_sample
-# 开始输出
-idx = 0
-real_answer = [None] * num_sample
-answer = []
+# cnt = 0
+# bad_cases = []
+# t = []
+# softm = torch.nn.Softmax(dim = 1)
+# num_sample = len(eval_dataset)
+# """
+# 小心 num_sample > example_idx  因为每一个example分成了很多个sample
+# """
+# answer_list = [None] * num_sample
+# # 开始输出
+# idx = 0
+# real_answer = [None] * num_sample
+# answer = []
 #TODO 利用logits 而不是最多出现的答案来选取.
 # for inputs in tqdm(eval_dataloader):
 #     logits, labels = eval_step(inputs)
@@ -148,7 +167,7 @@ answer = []
 
 import pickle
 import numpy as np
-def model_essmble(file_list):
+def model_essmble_offline(file_list):
     """
     通过输入的pickle dumps 文件，将每一个模型的输出混合起来
     pickle 是一个二维list 存放着每一个sample的logits分布。 t_answer: List[List[float]]
@@ -163,6 +182,22 @@ def model_essmble(file_list):
         else:
             answer += np.array(t_answer, dtype=np.float)
     answer = np.argmax(answer, axis=1)
+
+def model_essmble_online(model_list):
+    answer = np.array([])
+    for model_path in model_list:
+        model = AutoModelForMultipleChoice.from_pretrained(model_path).to(device)
+        tokenizer = AutoTokenizer.from_pretrained(tokenizer_path[judge_model(model_path)])
+        eval_dataloader = get_dataloader(tokenizer)
+        if answer.shape[0] == 0:
+            answer = get_answer(model, eval_dataloader)
+        else:
+            answer += get_answer(model, eval_dataloader)
+    answer = np.argmax(answer, axis=1)
+
+    return answer
+
+
 
 def compute_acc(preds, labels):
     return (preds == labels).mean()
@@ -195,8 +230,8 @@ def main():
     # with open(os.path.join(args.model_name_or_path, 'eval_rrr'), 'wb') as writer:
     #     pickle.dump(bad_cases, writer)
 
-    preds = get_answer(model, eval_dataloader)
-    labels = get_labels(os.path.join(args.data_dir,"dev.jsonl"))
+    preds = model_essmble_online(args.model_list)
+    labels = get_labels(os.path.join(args.data_dir, "dev.jsonl"))
     print(compute_acc(preds, labels))
     # wrong_list = []
     # cnt = 0
