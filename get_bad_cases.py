@@ -30,10 +30,10 @@ parser.add_argument("--model_list", nargs="+", default=["a", "b"], help="model l
 args = parser.parse_args()
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-model = AutoModelForMultipleChoice.from_pretrained(args.model_name_or_path).to(device)
-model.eval()
-albert_path = "/home/xx/pretrained_model/albert-xxlarge-v2"
-tokenizer = AutoTokenizer.from_pretrained(albert_path)
+# model = AutoModelForMultipleChoice.from_pretrained(args.model_name_or_path).to(device)
+# model.eval()
+# albert_path = "/home/xx/pretrained_model/albert-xxlarge-v2"
+# tokenizer = AutoTokenizer.from_pretrained(albert_path)
 
 
 # only need path
@@ -74,7 +74,7 @@ def get_dataloader(tokenizer):
     eval_dataloader = DataLoader(
         eval_dataset,
         sampler=SequentialSampler(eval_dataset),
-        batch_size=8,
+        batch_size=4,
         drop_last=False,
         collate_fn=default_data_collator,
         num_workers=8,
@@ -223,7 +223,7 @@ def get_answer(model, dataloader):
             answer += output
         answer = torch.stack(answer, dim=0)
 
-    return answer.numpy()
+    return answer.cpu().numpy()
 # import pickle
 def main():
     import os
