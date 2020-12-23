@@ -9,17 +9,10 @@ SEMEVAL_DIR_TASK2="./dataset/task2"
 learning_rate=5e-6
 epochs=8
 max_seq_length=256
-<<<<<<< Updated upstream
-OUTPUT_DIR=./output/${model}_256_task2
-
-#  -m torch.distributed.launch --nproc_per_node=1  --nnodes=1\
-CUDA_VISIBLE_DEVICES=2 python \
-=======
 OUTPUT_DIR=./output/${model}_256_test
 
 #  -m torch.distributed.launch --nproc_per_node=1  --nnodes=1\
-CUDA_VISIBLE_DEVICES=0 python \
->>>>>>> Stashed changes
+CUDA_VISIBLE_DEVICES=1 python \
         run_roberta.py \
         --task_name semeval \
         --model_name_or_path ${enhanced_model_path} \
@@ -36,10 +29,6 @@ CUDA_VISIBLE_DEVICES=0 python \
         --eval_steps 500 \
         --per_device_eval_batch_size=8 \
         --per_device_train_batch_size=1 \
-<<<<<<< Updated upstream
-        --gradient_accumulation_steps 16 \
-=======
-        --gradient_accumulation_steps 8 \
->>>>>>> Stashed changes
+        --gradient_accumulation_steps 32 \
         --overwrite_output  \
         --evaluate_during_training    
