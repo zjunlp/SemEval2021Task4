@@ -21,6 +21,7 @@ from transformers import (
     set_seed,
     LongformerModel,
     RobertaForMultipleChoice,
+    BertModel,
     AlbertForMultipleChoice
 )
 from utils import MultipleChoiceDataset, Split, processors, MultipleChoiceSlidingDataset, TrainingArguments

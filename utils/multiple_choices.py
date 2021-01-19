@@ -450,7 +450,7 @@ def sliding_convert_examples_to_features(
         f = semeval_convert_example_to_features(
             example, 
             max_seq_length=max_length, 
-            doc_stride=100,
+            doc_stride=50,
             max_query_length=70,
             padding_strategy="max_length",
             tokenizer=tokenizer,

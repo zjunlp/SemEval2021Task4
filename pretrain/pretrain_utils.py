@@ -110,16 +110,26 @@ def divide_data(text):
     if len(words_list) < 200:
         return [text]
     else:
+        # 一段大于200的文本
         sentence_list = text.split('.')
         total_sentence = len(sentence_list)
         now_sentence_id = 0
         t_sentence = ""
+        cnt = 1000
         while now_sentence_id < total_sentence :
-            if len((t_sentence + sentence_list[now_sentence_id]).split()) > 200:
+            if cnt < 0:
+                import IPython; IPython.embed(); exit(1)
+            cnt -= 1
+            sen_now =  sentence_list[now_sentence_id]
+            if len(sen_now.split()) > 200:
+                temp.append(sen_now)
+                now_sentence_id += 1
+            # 如果加上了大于200
+            if len((' .'.join([t_sentence, sen_now])).split()) > 200:
                 temp.append(t_sentence)
                 t_sentence = ""
             else:
-                t_sentence += " . " + sentence_list[now_sentence_id]
+                t_sentence +=  sen_now + " ."
                 now_sentence_id += 1
 
     return temp
