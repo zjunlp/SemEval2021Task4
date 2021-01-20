@@ -60,7 +60,7 @@ def get_dataloader(tokenizer):
                 task=args.task_name,
                 max_seq_length=args.max_seq_length,
                 overwrite_cache=args.overwrite_cache,
-                mode=Split.dev,
+                mode=Split.test,
             )
         )
     else:
@@ -70,7 +70,7 @@ def get_dataloader(tokenizer):
             task=args.task_name,
             max_seq_length=args.max_seq_length,
             overwrite_cache=args.overwrite_cache,
-            mode=Split.dev,
+            mode=Split.test,
         )
 
     eval_dataloader = DataLoader(
@@ -229,12 +229,15 @@ def get_answer(model, dataloader):
 # import pickle
 
 
-
+import pandas as pd
 def write_answer_to_file(answer, args):
     name = "subtask1.csv" if "task1" in args.data_dir else "subtask2.csv"
     file_path = os.path.join("./answer_file", name)
     # turn to Int
-    answer.astype(int)
+    answer = answer.astype(int)
+    b = pd.DataFrame(answer, columns=['a']).astype(int)
+    b.to_csv(file_path, header=0)
+    import IPython; IPython.embed(); exit(1)
     np.savetxt(file_path, answer, delimiter=",")
 
 
@@ -244,10 +247,10 @@ def main():
     #     pickle.dump(bad_cases, writer)
 
     preds = model_essmble_online(args.model_list)
-    labels = get_labels(os.path.join(args.data_dir, "dev.jsonl"))
+    # labels = get_labels(os.path.join(args.data_dir, "dev.jsonl"))
     write_answer_to_file(preds, args)
 
-    print(compute_acc(preds, labels))
+    # print(compute_acc(preds, labels))
     # wrong_list = []
     # cnt = 0
     # with open(os.path.join(args.data_dir,'dev.jsonl') ,'r', encoding='UTF-8') as reader:

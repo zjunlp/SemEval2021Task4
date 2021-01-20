@@ -247,10 +247,10 @@ class SemEvalProcessor(DataProcessor):
     def get_test_examples(self, data_dir):
         """See base class."""
         logger.info("LOOKING AT {} dev".format(data_dir))
-        raise ValueError(
-            "For swag testing, the input file does not contain a label column. It can not be tested in current code"
-            "setting!"
-        )
+        # raise ValueError(
+        #     "For swag testing, the input file does not contain a label column. It can not be tested in current code"
+        #     "setting!"
+        # )
         return self._create_examples(self._read_json(os.path.join(data_dir, "test.jsonl")), "test")
 
     def get_labels(self):
@@ -276,7 +276,7 @@ class SemEvalProcessor(DataProcessor):
                 # choice is stored in "sent2".
                 contexts=[d['article'],d['article'], d['article'], d['article'], d['article']],
                 endings=[d['option_0'],d['option_1'],d['option_2'],d['option_3'],d['option_4']],
-                label=str(d['label']),
+                label=str(d['label']) if 'label' in d else str("1"),
             )
             for _, d in enumerate(lines)  # we skip the line with the column names
         ]
