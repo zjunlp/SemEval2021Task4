@@ -1,3 +1,5 @@
+import os
+import csv
 import enum
 from torch.utils.data import dataloader
 import json
@@ -225,13 +227,26 @@ def get_answer(model, dataloader):
 
     return answer.cpu().numpy()
 # import pickle
+
+
+
+def write_answer_to_file(answer, args):
+    name = "subtask1.csv" if "task1" in args.data_dir else "subtask2.csv"
+    file_path = os.path.join("./answer_file", name)
+    # turn to Int
+    answer.astype(int)
+    np.savetxt(file_path, answer, delimiter=",")
+
+
+
 def main():
-    import os
     # with open(os.path.join(args.model_name_or_path, 'eval_rrr'), 'wb') as writer:
     #     pickle.dump(bad_cases, writer)
 
     preds = model_essmble_online(args.model_list)
     labels = get_labels(os.path.join(args.data_dir, "dev.jsonl"))
+    write_answer_to_file(preds, args)
+
     print(compute_acc(preds, labels))
     # wrong_list = []
     # cnt = 0
