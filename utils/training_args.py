@@ -257,6 +257,10 @@ class TrainingArguments:
         default=False,
         metadata={"help": "Whether to use 16-bit (mixed) precision (through NVIDIA apex) instead of 32-bit"},
     )
+    label_smoothing: bool = field(
+        default=False,
+        metadata={"help": "Whether to use label smoothing, ttttttrick~"}
+    )
     fp16_opt_level: str = field(
         default="O1",
         metadata={

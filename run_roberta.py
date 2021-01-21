@@ -25,7 +25,7 @@ from transformers import (
     AlbertForMultipleChoice
 )
 from utils import MultipleChoiceDataset, Split, processors, MultipleChoiceSlidingDataset, TrainingArguments
-from model import Trainer
+from model import Trainer, RobertaForMultipleChoiceWithLabelSmooth
 
 
 logger = logging.getLogger(__name__)
@@ -135,12 +135,20 @@ def main():
         model_args.tokenizer_name if model_args.tokenizer_name else model_args.model_name_or_path,
         cache_dir=model_args.cache_dir,
     )
-    model = AutoModelForMultipleChoice.from_pretrained(
+    if training_args.label_smoothing:
+        model = RobertaForMultipleChoiceWithLabelSmooth.from_pretrained(
+            model_args.model_name_or_path,
+            from_tf=bool(".ckpt" in model_args.model_name_or_path),
+            config=config,
+            cache_dir=model_args.cache_dir,
+        )
+    else:
+        model = AutoModelForMultipleChoice.from_pretrained(
         model_args.model_name_or_path,
         from_tf=bool(".ckpt" in model_args.model_name_or_path),
         config=config,
         cache_dir=model_args.cache_dir,
-    )
+        )
 
     # Get datasets
     if training_args.sliding_window:

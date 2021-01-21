@@ -1,2 +1,2 @@
 from .Trainer import *
-from .roberta_label_smoothing import RobertaForSequenceClassificationWithLabelSmooth
+from .roberta_label_smoothing import RobertaForMultipleChoiceWithLabelSmooth
