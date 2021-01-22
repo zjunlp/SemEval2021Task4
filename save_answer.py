@@ -4,7 +4,7 @@ import enum
 from torch.utils.data import dataloader
 import json
 from transformers.configuration_auto import AutoConfig
-from utils.multiple_choices import MultipleChoiceDataset
+# from utils.multiple_choices import MultipleChoiceDataset
 from transformers import AutoTokenizer, AutoModelForMultipleChoice, WEIGHTS_NAME, RobertaForMultipleChoice
 import torch
 import torch.nn.functional as F
@@ -34,8 +34,9 @@ parser.add_argument("--model_list", nargs="+", default=["a", "b"], help="model l
 
 args = parser.parse_args()
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-tokenizer_path = {"albert" : "/home/xx/pretrained_model/albert-xxlarge-v2", "roberta": "/home/xx/pretrained_model/roberta-large", "xlnet":"/home/chenxn/pretrained_model/xlnet-large-cased"}
+# device = 'cuda' if torch.cuda.is_available() else 'cpu'
+device = 'cpu'
+tokenizer_path = {"albert" : "/home/xx/pretrained_model/albert-xxlarge-v2", "roberta": "/home/xx/pretrained_model/roberta-large", "xlnet":"/home/chenxn/SemEval2021/pretrained_model/xlnet-large-cased"}
 
 def judge_model(model_name):
     if "albert" in model_name:
@@ -79,6 +80,16 @@ def get_dataloader(tokenizer):
     )
     return eval_dataloader
 
+def _prepare_inputs(inputs: Dict[str, Union[torch.Tensor, Any]]) -> Dict[str, Union[torch.Tensor, Any]]:
+    """
+    Prepare :obj:`inputs` before feeding them to the model, converting them to tensors if they are not already and
+    handling potential state.
+    """
+    for k, v in inputs.items():
+        if isinstance(v, torch.Tensor):
+            inputs[k] = v.to(device)
+    return inputs
+
 def save_answer(model_list):
     answer=[]
     for model_path in model_list:
@@ -89,14 +100,16 @@ def save_answer(model_list):
         with torch.no_grad():
             for batch in tqdm(eval_dataloader, desc=''):
                 batch = _prepare_inputs(batch)
-                _, output = model(**batch)
+                output= model(**batch)[1]
                 output = F.softmax(output, dim=1)
                 answer += output
+                break
     answer = torch.stack(answer, dim=0)
     answer=np.array(answer)
     with open('result.pkl', 'wb') as f:               #write
         pickle.dump(answer, f)
         f.close()
+    
 
 def main():
     save_answer(args.model_list)
