@@ -143,5 +143,7 @@ test/scripts/
 good_models/
 pretrain_model/
 logs/
-
+pretrained_model/
 dataset/pretrain_dataset/
+shishi.py
+test.pkl

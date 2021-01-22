@@ -1,3 +1,5 @@
+import os
+import csv
 import enum
 from torch.utils.data import dataloader
 import json
@@ -58,7 +60,7 @@ def get_dataloader(tokenizer):
                 task=args.task_name,
                 max_seq_length=args.max_seq_length,
                 overwrite_cache=args.overwrite_cache,
-                mode=Split.dev,
+                mode=Split.test,
             )
         )
     else:
@@ -68,7 +70,7 @@ def get_dataloader(tokenizer):
             task=args.task_name,
             max_seq_length=args.max_seq_length,
             overwrite_cache=args.overwrite_cache,
-            mode=Split.dev,
+            mode=Split.test,
         )
 
     eval_dataloader = DataLoader(
@@ -91,21 +93,21 @@ def _prepare_inputs(inputs: Dict[str, Union[torch.Tensor, Any]]) -> Dict[str, Un
             inputs[k] = v.to(device)
     return inputs
 
-def eval_step(inputs,):
-    inputs = _prepare_inputs(inputs)
-    with torch.no_grad():
-        outputs = model(**inputs)
-        logits = outputs[1:]
+# def eval_step(inputs,):
+#     inputs = _prepare_inputs(inputs)
+#     with torch.no_grad():
+#         outputs = model(**inputs)
+#         logits = outputs[1:]
     
-    logits = tuple(logit.detach() for logit in logits)
-    if len(logits) == 1:
-        logits = logits[0]
+#     logits = tuple(logit.detach() for logit in logits)
+#     if len(logits) == 1:
+#         logits = logits[0]
     
-    labels = tuple(inputs.get(name).detach() for name in ['labels'])
-    if len(labels) == 1:
-        labels = labels[0]
+#     labels = tuple(inputs.get(name).detach() for name in ['labels'])
+#     if len(labels) == 1:
+#         labels = labels[0]
 
-    return (logits, labels)
+#     return (logits, labels)
 
 def count_answer(answer):
     """
@@ -225,32 +227,26 @@ def get_answer(model, dataloader):
 
     return answer.cpu().numpy()
 # import pickle
+
+
+import pandas as pd
+def write_answer_to_file(answer, args):
+    name = "subtask1.csv" if "task1" in args.data_dir else "subtask2.csv"
+    file_path = os.path.join("./answer_file", name)
+    # turn to Int
+    answer = answer.astype(int)
+    b = pd.DataFrame(answer, columns=['a']).astype(int)
+    b.to_csv(file_path, header=0)
+    # import IPython; IPython.embed(); exit(1)
+    # np.savetxt(file_path, answer, delimiter=",")
+
+
+
 def main():
-    import os
-    # with open(os.path.join(args.model_name_or_path, 'eval_rrr'), 'wb') as writer:
-    #     pickle.dump(bad_cases, writer)
 
     preds = model_essmble_online(args.model_list)
-    labels = get_labels(os.path.join(args.data_dir, "dev.jsonl"))
-    print(compute_acc(preds, labels))
-    # wrong_list = []
-    # cnt = 0
-    # with open(os.path.join(args.data_dir,'dev.jsonl') ,'r', encoding='UTF-8') as reader:
-    #     for line_id,line in enumerate(reader.readlines()):
-    #         t = json.loads(line)
-    #         op = torch.argmax(torch.tensor(bad_cases[line_id]), dim=0).item()
-    #         if op != t['label']:
-    #             t['wrong_label'] = op
-    #             t['logits'] = bad_cases[line_id]
-    #             wrong_list.append(t)
-    #             cnt += 1
-
-    # assert cnt == total - cor
-
-    # with open(os.path.join(args.model_name_or_path,'wrong_answer.json'), 'w', encoding='UTF-8') as writer:
-    #     for w in wrong_list:
-    #         # ensure_ascii=False is important to avoid the luanma
-    #         writer.writelines(json.dumps(w, ensure_ascii=False) + '\n')
+    # labels = get_labels(os.path.join(args.data_dir, "dev.jsonl"))
+    write_answer_to_file(preds, args)
 
 if __name__ == "__main__":
     main()
