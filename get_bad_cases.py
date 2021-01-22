@@ -237,38 +237,16 @@ def write_answer_to_file(answer, args):
     answer = answer.astype(int)
     b = pd.DataFrame(answer, columns=['a']).astype(int)
     b.to_csv(file_path, header=0)
-    import IPython; IPython.embed(); exit(1)
-    np.savetxt(file_path, answer, delimiter=",")
+    # import IPython; IPython.embed(); exit(1)
+    # np.savetxt(file_path, answer, delimiter=",")
 
 
 
 def main():
-    # with open(os.path.join(args.model_name_or_path, 'eval_rrr'), 'wb') as writer:
-    #     pickle.dump(bad_cases, writer)
 
     preds = model_essmble_online(args.model_list)
     # labels = get_labels(os.path.join(args.data_dir, "dev.jsonl"))
     write_answer_to_file(preds, args)
-
-    # print(compute_acc(preds, labels))
-    # wrong_list = []
-    # cnt = 0
-    # with open(os.path.join(args.data_dir,'dev.jsonl') ,'r', encoding='UTF-8') as reader:
-    #     for line_id,line in enumerate(reader.readlines()):
-    #         t = json.loads(line)
-    #         op = torch.argmax(torch.tensor(bad_cases[line_id]), dim=0).item()
-    #         if op != t['label']:
-    #             t['wrong_label'] = op
-    #             t['logits'] = bad_cases[line_id]
-    #             wrong_list.append(t)
-    #             cnt += 1
-
-    # assert cnt == total - cor
-
-    # with open(os.path.join(args.model_name_or_path,'wrong_answer.json'), 'w', encoding='UTF-8') as writer:
-    #     for w in wrong_list:
-    #         # ensure_ascii=False is important to avoid the luanma
-    #         writer.writelines(json.dumps(w, ensure_ascii=False) + '\n')
 
 if __name__ == "__main__":
     main()

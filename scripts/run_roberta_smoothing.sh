@@ -7,9 +7,9 @@ SEMEVAL_DIR_TASK2="./dataset/task2"
 # lr = 1e-6 get the result
 
 learning_rate=5e-6
-epochs=16
+epochs=4
 max_seq_length=256
-name=${model}_256_test_label_smoothing_task1
+name=${model}_256_test_label_smoothing_sliding_task1
 OUTPUT_DIR=./output/${name}
 LOGGING_DIR=./logs/${name}
 
@@ -18,6 +18,7 @@ CUDA_VISIBLE_DEVICES=1 python \
         run_roberta.py \
         --task_name semeval \
         --model_name_or_path ${MODEL_NAME_OR_PATH} \
+        --sliding \
         --label_smoothing \
         --do_train \
         --do_eval \
