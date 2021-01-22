@@ -93,21 +93,21 @@ def _prepare_inputs(inputs: Dict[str, Union[torch.Tensor, Any]]) -> Dict[str, Un
             inputs[k] = v.to(device)
     return inputs
 
-def eval_step(inputs,):
-    inputs = _prepare_inputs(inputs)
-    with torch.no_grad():
-        outputs = model(**inputs)
-        logits = outputs[1:]
+# def eval_step(inputs,):
+#     inputs = _prepare_inputs(inputs)
+#     with torch.no_grad():
+#         outputs = model(**inputs)
+#         logits = outputs[1:]
     
-    logits = tuple(logit.detach() for logit in logits)
-    if len(logits) == 1:
-        logits = logits[0]
+#     logits = tuple(logit.detach() for logit in logits)
+#     if len(logits) == 1:
+#         logits = logits[0]
     
-    labels = tuple(inputs.get(name).detach() for name in ['labels'])
-    if len(labels) == 1:
-        labels = labels[0]
+#     labels = tuple(inputs.get(name).detach() for name in ['labels'])
+#     if len(labels) == 1:
+#         labels = labels[0]
 
-    return (logits, labels)
+#     return (logits, labels)
 
 def count_answer(answer):
     """

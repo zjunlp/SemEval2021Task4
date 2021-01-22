@@ -1262,7 +1262,7 @@ class Trainer:
         ordering_and_checkpoint_path = []
 
         glob_checkpoints = [str(x) for x in Path(self.args.output_dir).glob(f"{checkpoint_prefix}-*")]
-        import IPython; IPython.embed(); exit(1)
+        # import IPython; IPython.embed(); exit(1)
 
         for path in glob_checkpoints:
             if use_mtime:
