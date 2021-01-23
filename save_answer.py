@@ -25,17 +25,18 @@ parser = argparse.ArgumentParser(description='hope it will work')
 default_path = './output/xlnet-large-cased_task1_accumulate16_polylr8e-6/checkpoint-2250'
 parser.add_argument('--model_name_or_path', type=str, help='an integer for the accumulator', default=default_path)
 parser.add_argument('--data_dir', type=str, help='an integer for the accumulator', default='./dataset/training_data')
-parser.add_argument('--max_seq_length', type=int, help='an integer for the accumulator', default='./dataset/training_data')
+parser.add_argument('--max_seq_length', type=int, help='an integer for the accumulator', default=128)
+parser.add_argument('--acc', type=float, help='an integer for the accumulator', default=80.4)
 parser.add_argument('--sliding_window', help='an integer for the accumulator', default=False,action="store_true" )
 parser.add_argument('--task_name',type=str,  help='an integer for the accumulator', default="semeval" )
+parser.add_argument('--output_dir',type=str,  help='an integer for the accumulator', default="./answer_file" )
 parser.add_argument('--overwrite_cache', help='overwrite_cache', default=False,action="store_true" )
-parser.add_argument("--answer_list", nargs="+", default=["a", "b"], help="answer pickle")
-parser.add_argument("--model_list", nargs="+", default=["a", "b"], help="model list")
+# parser.add_argument("--answer_list", nargs="+", default=["a", "b"], help="answer pickle")
+parser.add_argument("--model_name_or_path", type=str, default="roberta-large", help="model_name_or_path")
 
 args = parser.parse_args()
 
-# device = 'cuda' if torch.cuda.is_available() else 'cpu'
-device = 'cpu'
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 tokenizer_path = {"albert" : "/home/xx/pretrained_model/albert-xxlarge-v2", "roberta": "/home/xx/pretrained_model/roberta-large", "xlnet":"/home/chenxn/SemEval2021/pretrained_model/xlnet-large-cased"}
 
 def judge_model(model_name):
@@ -57,7 +58,7 @@ def get_dataloader(tokenizer):
                 task=args.task_name,
                 max_seq_length=args.max_seq_length,
                 overwrite_cache=args.overwrite_cache,
-                mode=Split.dev,
+                mode=Split.test,
             )
         )
     else:
@@ -67,7 +68,7 @@ def get_dataloader(tokenizer):
             task=args.task_name,
             max_seq_length=args.max_seq_length,
             overwrite_cache=args.overwrite_cache,
-            mode=Split.dev,
+            mode=Split.test,
         )
 
     eval_dataloader = DataLoader(
@@ -90,30 +91,31 @@ def _prepare_inputs(inputs: Dict[str, Union[torch.Tensor, Any]]) -> Dict[str, Un
             inputs[k] = v.to(device)
     return inputs
 
-def save_answer(model_list):
-    answer=[]
-    for model_path in model_list:
-        model = AutoModelForMultipleChoice.from_pretrained(model_path).to(device)
-        tokenizer = AutoTokenizer.from_pretrained(tokenizer_path[judge_model(model_path)])
-        eval_dataloader = get_dataloader(tokenizer)
-        model.eval()
-        with torch.no_grad():
-            for batch in tqdm(eval_dataloader, desc=''):
-                batch = _prepare_inputs(batch)
-                output= model(**batch)[1]
-                output = F.softmax(output, dim=1)
-                answer += output
-                break
+def save_answer(args):
+    answer = []
+    model = AutoModelForMultipleChoice.from_pretrained(args.model_name_or_path).to(device)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path)
+    eval_dataloader = get_dataloader(tokenizer)
+    model.eval()
+    with torch.no_grad():
+        for batch in tqdm(eval_dataloader, desc=''):
+            batch = _prepare_inputs(batch)
+            output= model(**batch)[1]
+            output = F.softmax(output, dim=1)
+            answer += output
+            break
     answer = torch.stack(answer, dim=0)
-    answer=np.array(answer)
-    with open('result.pkl', 'wb') as f:               #write
-        pickle.dump(answer, f)
-        f.close()
+    answer = answer.numpy()
+    res = {}
+    res["answer"] = answer
+    res["acc"] = args.acc
+    with open(os.path.join(args.output_dir, 'result.pkl'), 'wb') as f:               #write
+        pickle.dump(res, f)
     
 
 def main():
-    save_answer(args.model_list)
-    print("finish")
+    save_answer(args)
+    print("finish model dev acc {}, saved file path".format(args.acc, args.output_dir))
 
 
 

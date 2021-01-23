@@ -169,7 +169,7 @@ def count_answer(answer):
 
 import pickle
 import numpy as np
-def model_essmble_offline(file_list):
+def model_ensemble_offline(file_list):
     """
     通过输入的pickle dumps 文件，将每一个模型的输出混合起来
     pickle 是一个二维list 存放着每一个sample的logits分布。 t_answer: List[List[float]]
@@ -185,7 +185,7 @@ def model_essmble_offline(file_list):
             answer += np.array(t_answer, dtype=np.float)
     answer = np.argmax(answer, axis=1)
 
-def model_essmble_online(model_list):
+def model_ensemble_online(model_list):
     answer = np.array([])
     for model_path in model_list:
         model = AutoModelForMultipleChoice.from_pretrained(model_path).to(device)
@@ -244,7 +244,7 @@ def write_answer_to_file(answer, args):
 
 def main():
 
-    preds = model_essmble_online(args.model_list)
+    preds =model_ensemble_online(args.model_list)
     # labels = get_labels(os.path.join(args.data_dir, "dev.jsonl"))
     write_answer_to_file(preds, args)
 
