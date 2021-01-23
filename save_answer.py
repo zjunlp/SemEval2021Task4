@@ -19,37 +19,16 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 import pickle
 import numpy as np
 
+from get_bad_cases import eval_model
 
-parser = argparse.ArgumentParser(description='hope it will work')
-# default_path = './output/roberta-base_enhanced/checkpoint-14000'
-default_path = './output/xlnet-large-cased_task1_accumulate16_polylr8e-6/checkpoint-2250'
-parser.add_argument('--model_name_or_path', type=str, help='an integer for the accumulator', default=default_path)
-parser.add_argument('--data_dir', type=str, help='an integer for the accumulator', default='./dataset/training_data')
-parser.add_argument('--max_seq_length', type=int, help='an integer for the accumulator', default=128)
-parser.add_argument('--acc', type=float, help='an integer for the accumulator', default=80.4)
-parser.add_argument('--sliding_window', help='an integer for the accumulator', default=False,action="store_true" )
-parser.add_argument('--task_name',type=str,  help='an integer for the accumulator', default="semeval" )
-parser.add_argument('--output_dir',type=str,  help='an integer for the accumulator', default="./answer_file" )
-parser.add_argument('--overwrite_cache', help='overwrite_cache', default=False,action="store_true" )
-# parser.add_argument("--answer_list", nargs="+", default=["a", "b"], help="answer pickle")
-parser.add_argument("--model_name_or_path", type=str, default="roberta-large", help="model_name_or_path")
+import logging
 
-args = parser.parse_args()
+logger = logging.getLogger(__name__)
+
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-tokenizer_path = {"albert" : "/home/xx/pretrained_model/albert-xxlarge-v2", "roberta": "/home/xx/pretrained_model/roberta-large", "xlnet":"/home/chenxn/SemEval2021/pretrained_model/xlnet-large-cased"}
 
-def judge_model(model_name):
-    if "albert" in model_name:
-        return "albert"
-    elif "roberta" in model_name:
-        return "roberta"
-    elif "xlnet" in model_name:
-        return "xlnet"
-    else:
-        assert 1 == 2, "no model in model_name"
-
-def get_dataloader(tokenizer):
+def get_dataloader(tokenizer, args):
     if args.sliding_window:
         eval_dataset = (
             MultipleChoiceSlidingDataset(
@@ -91,11 +70,11 @@ def _prepare_inputs(inputs: Dict[str, Union[torch.Tensor, Any]]) -> Dict[str, Un
             inputs[k] = v.to(device)
     return inputs
 
-def save_answer(args):
+def save_answer(args, acc):
     answer = []
     model = AutoModelForMultipleChoice.from_pretrained(args.model_name_or_path).to(device)
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path)
-    eval_dataloader = get_dataloader(tokenizer)
+    eval_dataloader = get_dataloader(tokenizer, args)
     model.eval()
     with torch.no_grad():
         for batch in tqdm(eval_dataloader, desc=''):
@@ -103,19 +82,36 @@ def save_answer(args):
             output= model(**batch)[1]
             output = F.softmax(output, dim=1)
             answer += output
-            break
     answer = torch.stack(answer, dim=0)
-    answer = answer.numpy()
+    answer = answer.cpu().numpy()
     res = {}
     res["answer"] = answer
-    res["acc"] = args.acc
+    res["acc"] = acc
+    if not os.path.exists(args.output_dir): os.mkdir(args.output_dir)
     with open(os.path.join(args.output_dir, 'result.pkl'), 'wb') as f:               #write
         pickle.dump(res, f)
     
 
 def main():
-    save_answer(args)
-    print("finish model dev acc {}, saved file path".format(args.acc, args.output_dir))
+    parser = argparse.ArgumentParser(description='hope it will work')
+    parser.add_argument('--model_name_or_path', type=str, help='an integer for the accumulator')
+    parser.add_argument('--data_dir', type=str, help='an integer for the accumulator', default='./dataset/task1')
+    parser.add_argument('--max_seq_length', type=int, help='an integer for the accumulator', default=128)
+    # parser.add_argument('--acc', type=float, help='an integer for the accumulator', default=80.4)
+    parser.add_argument('--sliding_window', help='an integer for the accumulator', default=False,action="store_true" )
+    parser.add_argument('--task_name',type=str,  help='an integer for the accumulator', default="semeval" )
+    parser.add_argument('--output_dir',type=str,  help='an integer for the accumulator', default="./answer_file" )
+    parser.add_argument('--overwrite_cache', help='overwrite_cache', default=False,action="store_true" )
+    # parser.add_argument("--answer_list", nargs="+", default=["a", "b"], help="answer pickle")
+    logging.basicConfig(
+        format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
+        datefmt="%m/%d/%Y %H:%M:%S",
+    )
+    args = parser.parse_args()
+    logger.warning("验证模型在验证集合上是否真实有效")
+    acc = eval_model(args)
+    save_answer(args, acc)
+    print("finish model dev acc {}, saved file path".format(acc, args.output_dir))
 
 
 

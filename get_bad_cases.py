@@ -18,18 +18,6 @@ from tqdm import tqdm, trange
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 
-parser = argparse.ArgumentParser(description='hope it will work')
-default_path = './output/roberta-base_enhanced/checkpoint-14000'
-parser.add_argument('--model_name_or_path', type=str, help='an integer for the accumulator', default=default_path)
-parser.add_argument('--data_dir', type=str, help='an integer for the accumulator', default='./dataset/training_data')
-parser.add_argument('--max_seq_length', type=int, help='an integer for the accumulator', default='./dataset/training_data')
-parser.add_argument('--sliding_window', help='an integer for the accumulator', default=False,action="store_true" )
-parser.add_argument('--task_name',type=str,  help='an integer for the accumulator', default="semeval" )
-parser.add_argument('--overwrite_cache', help='overwrite_cache', default=False,action="store_true" )
-parser.add_argument("--answer_list", nargs="+", default=["a", "b"], help="answer pickle")
-parser.add_argument("--model_list", nargs="+", default=["a", "b"], help="model list")
-
-args = parser.parse_args()
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 # model = AutoModelForMultipleChoice.from_pretrained(args.model_name_or_path).to(device)
@@ -51,7 +39,10 @@ def judge_model(model_name):
     else:
         assert 1 == 2, "no model in model_name"
 
-def get_dataloader(tokenizer):
+def get_dataloader(tokenizer, args):
+    """
+    由于GPU限制，所以batch_size=1，免得占太多显存，eval慢点无所谓。
+    """
     if args.sliding_window:
         eval_dataset = (
             MultipleChoiceSlidingDataset(
@@ -60,7 +51,7 @@ def get_dataloader(tokenizer):
                 task=args.task_name,
                 max_seq_length=args.max_seq_length,
                 overwrite_cache=args.overwrite_cache,
-                mode=Split.test,
+                mode=Split.dev,
             )
         )
     else:
@@ -70,16 +61,16 @@ def get_dataloader(tokenizer):
             task=args.task_name,
             max_seq_length=args.max_seq_length,
             overwrite_cache=args.overwrite_cache,
-            mode=Split.test,
+            mode=Split.dev,
         )
 
     eval_dataloader = DataLoader(
         eval_dataset,
         sampler=SequentialSampler(eval_dataset),
-        batch_size=4,
+        batch_size=1,
         drop_last=False,
         collate_fn=default_data_collator,
-        num_workers=8,
+        num_workers=1,
     )
     return eval_dataloader
 
@@ -118,53 +109,6 @@ def count_answer(answer):
     res = np.argmax(np.bincount(answer))
     return res
 
-# cnt = 0
-# bad_cases = []
-# t = []
-# softm = torch.nn.Softmax(dim = 1)
-# num_sample = len(eval_dataset)
-# """
-# 小心 num_sample > example_idx  因为每一个example分成了很多个sample
-# """
-# answer_list = [None] * num_sample
-# # 开始输出
-# idx = 0
-# real_answer = [None] * num_sample
-# answer = []
-#TODO 利用logits 而不是最多出现的答案来选取.
-# for inputs in tqdm(eval_dataloader):
-#     logits, labels = eval_step(inputs)
-#     logits_temp = torch.argmax(logits,dim = 1)
-#     example_idx = int(eval_dataset[idx].example_id)
-#     real_answer[example_idx] = labels.item()
-#     l = logits_temp.item()
-#     if answer_list[example_idx] is not None:
-#         answer_list[example_idx].append(l)
-#     else:
-#         answer_list[example_idx] = [l]
-#     t += (logits_temp == labels).tolist()
-#     bad_cases += softm(logits).tolist()
-#     idx += 1
-# for a in answer_list:
-#     if a is None:
-#         break
-#     answer.append(count_answer(np.array(a)))
-
-# # convert to ndarray to compute acc
-# if args.sliding_window:
-#     answer = np.array(answer)
-#     real_answer = np.array(real_answer)[:answer.shape[0]]
-
-#     acc = (answer == real_answer).mean()
-#     print("sliding window acc: " + str(acc))
-
-# # import IPython; IPython.embed(); exit(1)
-# total = len(t)
-# cor = 0.0
-# for a in t:
-#     if a:
-#         cor+=1
-# print('eval_acc:' + str(cor/total))
 
 
 import pickle
@@ -185,16 +129,31 @@ def model_ensemble_offline(file_list):
             answer += np.array(t_answer, dtype=np.float)
     answer = np.argmax(answer, axis=1)
 
-def model_ensemble_online(model_list):
+
+def eval_model(args):
+    model = AutoModelForMultipleChoice.from_pretrained(args.model_name_or_path).to(device)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path)
+    eval_dataloader = get_dataloader(tokenizer, args)
+    preds = get_answer(model, eval_dataloader)
+    preds = torch.argmax(torch.tensor(preds),dim=1).cpu().numpy()
+    labels = get_labels(args)
+
+    return compute_acc(preds, labels)
+
+    
+
+
+def model_ensemble_online(args):
     answer = np.array([])
-    for model_path in model_list:
-        model = AutoModelForMultipleChoice.from_pretrained(model_path).to(device)
-        tokenizer = AutoTokenizer.from_pretrained(tokenizer_path[judge_model(model_path)])
-        eval_dataloader = get_dataloader(tokenizer)
-        if answer.shape[0] == 0:
-            answer = get_answer(model, eval_dataloader)
-        else:
-            answer += get_answer(model, eval_dataloader)
+    model_path = args.model_name_or_path
+
+    model = AutoModelForMultipleChoice.from_pretrained(model_path).to(device)
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_path[judge_model(model_path)])
+    eval_dataloader = get_dataloader(tokenizer, args)
+    if answer.shape[0] == 0:
+        answer = get_answer(model, eval_dataloader)
+    else:
+        answer += get_answer(model, eval_dataloader)
     answer = np.argmax(answer, axis=1)
 
     return answer
@@ -204,9 +163,13 @@ def model_ensemble_online(model_list):
 def compute_acc(preds, labels):
     return (preds == labels).mean()
 
-def get_labels(dev_path):
+def get_labels(args):
+    """
+    依次读取label
+    """
     labels = []
-    with open(dev_path, "r", encoding='UTF-8') as reader:
+    dev_path = args.data_dir
+    with open(os.path.join(dev_path,"dev.jsonl"), "r", encoding='UTF-8') as reader:
         for line in reader.readlines():
             t = json.loads(line)
             labels.append(t['label'])
@@ -242,8 +205,23 @@ def write_answer_to_file(answer, args):
 
 
 
+
+
+
 def main():
 
+    parser = argparse.ArgumentParser(description='hope it will work')
+    default_path = './output/roberta-base_enhanced/checkpoint-14000'
+    parser.add_argument('--model_name_or_path', type=str, help='an integer for the accumulator', default=default_path)
+    parser.add_argument('--data_dir', type=str, help='an integer for the accumulator', default='./dataset/training_data')
+    parser.add_argument('--max_seq_length', type=int, help='an integer for the accumulator', default='./dataset/training_data')
+    parser.add_argument('--sliding_window', help='an integer for the accumulator', default=False,action="store_true" )
+    parser.add_argument('--task_name',type=str,  help='an integer for the accumulator', default="semeval" )
+    parser.add_argument('--overwrite_cache', help='overwrite_cache', default=False,action="store_true" )
+    parser.add_argument("--answer_list", nargs="+", default=["a", "b"], help="answer pickle")
+    parser.add_argument("--model_list", nargs="+", default=["a", "b"], help="model list")
+
+    args = parser.parse_args()
     preds =model_ensemble_online(args.model_list)
     # labels = get_labels(os.path.join(args.data_dir, "dev.jsonl"))
     write_answer_to_file(preds, args)
