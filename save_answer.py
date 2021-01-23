@@ -111,7 +111,7 @@ def main():
     logger.warning("验证模型在验证集合上是否真实有效")
     acc = eval_model(args)
     save_answer(args, acc)
-    print("finish model dev acc {}, saved file path".format(acc, args.output_dir))
+    print("finish model dev acc: {},\n saved file path: {}".format(acc, args.output_dir))
 
 
 
