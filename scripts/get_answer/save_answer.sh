@@ -8,28 +8,20 @@ OUTPUT_DIR 存储result.pkl 的路径，最好使用模型的名字
 COMMENT
 
 
-
-
-
-
-
-
-MODEL_PATH="./output/albert-xxlarge-v2_task1_128_sliding_window/checkpoint-33500"
-MODEL_PATH="output/albert-xxlarge-v2_task1_128_test/checkpoint-500"
-
-
-MAX_SEQ_LENGTH=512
-MODEL_NAME_OR_PATH=""
+MAX_SEQ_LENGTH=128
+MODEL_NAME_OR_PATH="saved_model_file/albert_task1"
 ACC=80.1
-OUTPUT_DIR="./answer_file/roberta-large"
+OUTPUT_DIR="./answer_file/albert"
 
 # albert_1="saved_model_file/albert_task2"
 # albert_2="saved_model_file/albert_task2_enhanced"
 # roberta_1="saved_model_file/roberta_task2"
 # xlnet="/home/chenxn/SemEval2021/output/xlnet-large-cased_task1_accumulate16_polylr8e-6/checkpoint-2750"
 
-CUDA_VISIBLE_DEVICES=  python save_answer.py \
+CUDA_VISIBLE_DEVICES=0  python save_answer.py \
+    --task_name semeval \
     --max_seq_length $MAX_SEQ_LENGTH \
     --data_dir "./dataset/task1" \
-    --model_list $xlnet \
+    --model_name_or_path $MODEL_NAME_OR_PATH \
+    --output_dir $OUTPUT_DIR \
     --overwrite_cache

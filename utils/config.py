@@ -10,6 +10,9 @@ from transformers.file_utils import cached_property, is_torch_available, is_torc
 from transformers.trainer_utils import EvaluationStrategy
 from transformers.utils import logging
 
+
+from .multiple_choices import processors
+
 import torch
 
 

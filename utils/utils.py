@@ -2,7 +2,7 @@ import os
 import shutil
 
 from typing import Dict, Optional
-from transformers import EvalPrediction,
+from transformers import EvalPrediction
 import numpy as np 
 
 
