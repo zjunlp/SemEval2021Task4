@@ -40,7 +40,12 @@ if __name__ == "__main__":
     parser.add_argument('--output', type=str, help='csv file path', default="./answer_file")
     args = parser.parse_args()
 
-    answer_list = ["./answer_file/roberta_enhanced", "./answer_file/roberta_smooth_label_85"]
+    answer_list = ["./answer_file/roberta_enhanced", "./answer_file/roberta_smooth_label_85",
+    "./answer_file/roberta-large_amax_512", "./answer_file/roberta-large_amax_512_test", "./answer_file/albert"]
+
+    answer_list = ["./answer_file/roberta-large_amax_512", "./answer_file/roberta_enhanced", "./answer_file/albert"]
+
+    answer_list = ["./answer_file/roberta_84_pretrain"]
     answer = []
     for a in answer_list:
         args.input = a
@@ -49,6 +54,8 @@ if __name__ == "__main__":
     answer = enssmble(answer)
     write_answer_to_file(answer, args)
 
+    os.system("zip ./answer_file/singlemodel.zip ./answer_file/subtask1.csv")
+    
     # import IPython; IPython.embed(); exit(1)
 
     # assert answer["acc"] > 0.82, "什么臭鱼烂虾， 82都不到, guna"
