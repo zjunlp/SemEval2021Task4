@@ -8,7 +8,7 @@ SEMEVAL_DIR_TASK2="./dataset/task2"
 learning_rate=5e-6
 epochs=10
 max_seq_length=256
-DATA_DIR=$SEMEVAL_DIR_TASK2
+DATA_DIR=$SEMEVAL_DIR_TASK1
 
 OUTPUT_DIR=./output/${model}_256_task2_sliding_window
 LOGGING_DIR=./logs/${model}_256_task2_sliding_window
@@ -19,7 +19,7 @@ CUDA_VISIBLE_DEVICES=1 python \
         run_roberta.py \
         --task_name semeval \
         --sliding_window \
-        --model_name_or_path ${enhanced_model_path} \
+        --model_name_or_path ${MODEL_NAME_OR_PATH} \
         --do_train \
         --do_eval \
         --eval_all_checkpoints \

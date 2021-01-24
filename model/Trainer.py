@@ -54,7 +54,7 @@ from transformers.trainer_utils import (
     nested_xla_mesh_reduce,
     set_seed,
 )
-from utils.training_args import TrainingArguments
+from utils import TrainingArguments
 from transformers.utils import logging
 
 

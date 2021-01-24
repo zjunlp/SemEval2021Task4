@@ -95,13 +95,19 @@ def squad_convert_example_to_features_init(tokenizer_for_convert: PreTrainedToke
     global tokenizer
     tokenizer = tokenizer_for_convert
 
+
 def clean_data(text):
     a =  text.replace("<s>"," ").replace("</s>", " ").replace("''"," ").replace("``"," ").replace('<summ-content>',' ')
     a = a.replace("cnn", " ")
     a = a.replace("</s><summ-content>"," ")
     a = a.replace("-lrb-", " ")
     a = a.replace("-rrb-", " ")
+    a = a.replace("-lsb-"," ")
+    a = a.replace("-rsb-"," ")
+    a = a.replace("-lcb-"," ")
+    a = a.replace("-rcb-"," ")
     return a
+
 
 #TODO 有点丑陋 而且token个数也是固定死的，需要加args
 def divide_data(text):

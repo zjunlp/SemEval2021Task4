@@ -147,3 +147,5 @@ pretrained_model/
 dataset/pretrain_dataset/
 shishi.py
 test.pkl
+/dataset/cnn-daily
+*.csv
