@@ -149,3 +149,5 @@ shishi.py
 test.pkl
 /dataset/cnn-daily
 *.csv
+get_bad.py
+save.py
