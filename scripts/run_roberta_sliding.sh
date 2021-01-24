@@ -15,12 +15,12 @@ LOGGING_DIR=./logs/${model}_256_task1_sliding_window
 
 
 #  -m torch.distributed.launch --nproc_per_node=1  --nnodes=1\
-CUDA_VISIBLE_DEVICES=2 python \
+CUDA_VISIBLE_DEVICES=4 python \
         run_roberta.py \
         --task_name semeval \
         --sliding_window \
         --label_smoothing \
-        --model_name_or_path ${MODEL_NAME_OR_PATH} \
+        --model_name_or_path ${model} \
         --do_train \
         --do_eval \
         --eval_all_checkpoints \
