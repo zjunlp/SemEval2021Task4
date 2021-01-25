@@ -25,7 +25,7 @@ def get_answer(args):
     return answer
 
 def enssmble(answer):
-    weight = [(a["acc"] - 0.8)*100. for a in answer]
+    weight = [(a["acc"] - 0.8)*100. if a["acc"] > 0.8 else 1 for a in answer ]
 
     real_answer = np.zeros_like(answer[0]["answer"])
     for idx, w in enumerate(weight):
@@ -40,13 +40,18 @@ if __name__ == "__main__":
     parser.add_argument('--output', type=str, help='csv file path', default="./answer_file")
     args = parser.parse_args()
 
-    answer_list = ["./answer_file/roberta_enhanced", "./answer_file/roberta_smooth_label_85",
-    "./answer_file/roberta-large_amax_512", "./answer_file/roberta-large_amax_512_test", "./answer_file/albert"]
 
     answer_list = ["./answer_file/roberta-large_amax_512", "./answer_file/roberta_enhanced", "./answer_file/albert"]
 
-    answer_list = ["./answer_file/roberta_84_pretrain"]
+    answer_list = ["./answer_file/roberta_84_pretrain", "./answer_file/xlnet"]
     answer = []
+
+    answer_list = ["./answer_file/roberta_enhanced", "./answer_file/roberta_smooth_label_85",
+    "./answer_file/roberta-large_amax_512", "./answer_file/roberta-large_amax_512_test", "./answer_file/albert", "./answer_file/xlnet"]
+
+    answer_list = [ "task1_albert_sliding", "roberta_enhanced", "roberta_enhanced", "roberta_smooth_label_85", "roberta-large_amax_512", "roberta-large_amax_512_test"]
+    answer_list = ["task1_albert_sliding"]
+    answer_list = [os.path.join("./answer_file",a) for a in answer_list]
     for a in answer_list:
         args.input = a
         answer.append(get_answer(args))
@@ -54,7 +59,7 @@ if __name__ == "__main__":
     answer = enssmble(answer)
     write_answer_to_file(answer, args)
 
-    os.system("zip ./answer_file/singlemodel.zip ./answer_file/subtask1.csv")
+    os.system("zip  -j ./answer_file/d.zip ./answer_file/subtask1.csv")
     
     # import IPython; IPython.embed(); exit(1)
 
