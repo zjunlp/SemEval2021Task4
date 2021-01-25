@@ -43,15 +43,12 @@ if __name__ == "__main__":
 
     answer_list = ["./answer_file/roberta-large_amax_512", "./answer_file/roberta_enhanced", "./answer_file/albert"]
 
-    answer_list = ["./answer_file/roberta_84_pretrain", "./answer_file/xlnet"]
+    answer_list = ["./answer_file/roberta_84_pretrain"]
+
+    answer_list = ["task1_enhanced_roberta_label_what_128"]
+
     answer = []
-
-    answer_list = ["./answer_file/roberta_enhanced", "./answer_file/roberta_smooth_label_85",
-    "./answer_file/roberta-large_amax_512", "./answer_file/roberta-large_amax_512_test", "./answer_file/albert", "./answer_file/xlnet"]
-
-    answer_list = [ "task1_albert_sliding", "roberta_enhanced", "roberta_enhanced", "roberta_smooth_label_85", "roberta-large_amax_512", "roberta-large_amax_512_test"]
-    answer_list = ["task1_albert_sliding"]
-    answer_list = [os.path.join("./answer_file",a) for a in answer_list]
+    answer_list = [os.path.join("./answer_file", a) for a in answer_list]
     for a in answer_list:
         args.input = a
         answer.append(get_answer(args))
@@ -59,7 +56,7 @@ if __name__ == "__main__":
     answer = enssmble(answer)
     write_answer_to_file(answer, args)
 
-    os.system("zip  -j ./answer_file/d.zip ./answer_file/subtask1.csv")
+    # os.system("zip ./answer_file/2model.zip ./answer_file/subtask1.csv")
     
     # import IPython; IPython.embed(); exit(1)
 

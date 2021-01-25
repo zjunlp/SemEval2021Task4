@@ -4,6 +4,7 @@ import shutil
 from typing import Dict, Optional
 from transformers import EvalPrediction
 import numpy as np 
+import pandas as pd
 
 
 def delete_checkpoint_files_except_the_best(file_path="."):
@@ -38,6 +39,27 @@ def simple_accuracy(preds, labels):
 def compute_metrics(p: EvalPrediction) -> Dict:
     preds = np.argmax(p.predictions, axis=1)
     return {"acc": simple_accuracy(preds, p.label_ids)}
+
+
+
+
+def write_answer_to_file(answer):
+    name = "subtask1.csv" if "task1" in args.data_dir else "subtask2.csv"
+    file_path = os.path.join("./answer_file", name)
+    # turn to Int
+    answer = answer.astype(int)
+    b = pd.DataFrame(answer, columns=['a']).astype(int)
+    b.to_csv(file_path, header=0)
+    # import IPython; IPython.embed(); exit(1)
+    # np.savetxt(file_path, answer, delimiter=",")
+
+
+# def convert_dev_to_train():
+#     answer = []
+#     with open("./dataset/task1/train.jsonl") as file:
+#         for line in file.readlines():
+            
+
 
 
 
