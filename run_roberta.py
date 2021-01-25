@@ -1,5 +1,6 @@
 # coding=utf-8
 import logging
+import json
 from logging import debug
 import os
 
@@ -192,7 +193,20 @@ def main():
         logger.info("删除之前的checkpoint 文件， 保存最好的到当前目录")
         delete_checkpoint_files_except_the_best(training_args.output_dir)
 
-    return results
+        with open(os.path.join(training_args.output_dir, "log_history.json"), "r") as file:
+            results = json.load(file)
+            acc = results[-1]["eval_acc"]
+        
+        if acc >= 0.85:
+            with open("result.txt", "a+") as file:
+                file.writelines("acc :{}\n".format(acc))
+                file.writelines("file path: {}\n".format(training_args.output_dir))
+    if training_args.do_predict:
+        #TODO 自动生成result.pkl
+        pass
+
+        
+    results
 
 
 
