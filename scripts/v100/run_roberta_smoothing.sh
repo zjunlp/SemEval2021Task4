@@ -1,33 +1,34 @@
 model='roberta-large'
 MODEL_NAME_OR_PATH="/home/xx/pretrained_model/"${model}
 # dataset dir
-SEMEVAL_DIR_TASK1="./dataset/task1"
-SEMEVAL_DIR_TASK2="./dataset/task2"
 # hyperparameter
 # lr = 1e-6 get the result
 
-epochs=4
+epochs=15
 max_seq_length=384
 
 
 
 for((i=1;i<=9;i++));
 do
-name=${model}_256_test_label_smoothing_sliding_task1_lr$i
-OUTPUT_DIR=./output/${name}_lr$i
-LOGGING_DIR=./logs/${name}_lr$i
+
+for((j=1;j<=2;j++));
+do
+SEMEVAL_DIR_TASK2="./task2/task2_"${j}
+name=${model}_384_test_label_smoothing_sliding_task2_lr$i_j
+OUTPUT_DIR=./output/${name}_lr$i_j
+LOGGING_DIR=./logs/${name}_lr$i_j
 learning_rate=${i}e-6
 #  -m torch.distributed.launch --nproc_per_node=1  --nnodes=1\
 CUDA_VISIBLE_DEVICES= python \
         run_roberta.py \
         --task_name semeval \
-        --model_name_or_path ${model} \
-        --sliding \
+        --model_name_or_path ${MODEL_NAME_OR_PATH} \
         --label_smoothing \
         --do_train \
         --do_eval \
         --eval_all_checkpoints \
-        --data_dir $SEMEVAL_DIR_TASK1 \
+        --data_dir $SEMEVAL_DIR_TASK2 \
         --learning_rate ${learning_rate} \
         --num_train_epochs ${epochs} \
         --max_seq_length ${max_seq_length} \
@@ -40,4 +41,5 @@ CUDA_VISIBLE_DEVICES= python \
         --gradient_accumulation_steps 32 \
         --overwrite_output  \
         --evaluate_during_training    
+done
 done

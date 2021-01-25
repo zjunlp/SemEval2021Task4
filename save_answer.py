@@ -53,10 +53,10 @@ def get_dataloader(tokenizer, args):
     eval_dataloader = DataLoader(
         eval_dataset,
         sampler=SequentialSampler(eval_dataset),
-        batch_size=4,
+        batch_size=1,
         drop_last=False,
         collate_fn=default_data_collator,
-        num_workers=8,
+        num_workers=1,
     )
     return eval_dataloader
 
