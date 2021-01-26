@@ -16,7 +16,7 @@ learning_rate=${i}e-6
 OUTPUT_DIR=./output/${model}_256_smoothing_lr${i}
 LOGGING_DIR=./logs/${model}_256_smoothing_lr${i}
 #  -m torch.distributed.launch --nproc_per_node=1  --nnodes=1\
-CUDA_VISIBLE_DEVICES=0 python \
+CUDA_VISIBLE_DEVICES=1 python \
         run_roberta.py \
         --task_name semeval \
         --model_name_or_path ${enhanced_model_path} \
