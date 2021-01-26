@@ -755,7 +755,7 @@ class Trainer:
             # Reset the past mems state at the beginning of each epoch if necessary.
             if self.args.past_index >= 0:
                 self._past = None
-            epoch_best_acc = 0
+            epoch_best_acc = past_acc
             epoch_pbar = tqdm(epoch_iterator, desc="Iteration", disable=disable_tqdm)
             for step, inputs in enumerate(epoch_iterator):
             
