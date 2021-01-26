@@ -839,7 +839,7 @@ class Trainer:
                 early_stop_epochs_count = 0
             else:
                 early_stop_epochs_count += 1
-            if early_stop_epochs_count >= 3:
+            if early_stop_epochs_count >= 2:
                 early_stop_flag = True
                 if self.args.max_steps > 0 and self.global_step >= self.args.max_steps:
                     break
