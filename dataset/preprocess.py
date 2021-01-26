@@ -17,6 +17,7 @@ from transformers import pipeline
 model_name = "albert-xxlarge-v2"
 model_name = "roberta-large"
 
+MASK="<mask>" if "roberta" in model_name else "[MASK]"
 
 tokenizer = AutoTokenizer.from_pretrained('/home/xx/pretrained_model/' + model_name)
 model = AutoModelForMaskedLM.from_pretrained('/home/xx/pretrained_model/' + model_name, return_dict=True)
@@ -98,16 +99,13 @@ def add_new_option(data_path, new_file_name=None):
         new_file_name = data_path.replace('train','train_enhanced') 
     new_dict = []
     total = 0
-    correct = 0
-    pretrain = []
     with open(data_path, 'r') as file:
         for line in tqdm(file.readlines()):
             t = json.loads(line)
             article = t['article']
-            mask_sentence = article[:400] + t['question'].replace('@placeholder', '<mask>')
+            mask_sentence = article[:400] + t['question'].replace('@placeholder', MASK)
             options =[ t['option_0'], t['option_1'],t['option_2'],t['option_3'],t['option_4']]
             result = top5_words(mask_sentence)[0]
-            pretrain.append(result)
 
             # pred = get_token_output(article[:400] + t['question'], options)
             # if pred == t['label']:
@@ -124,8 +122,6 @@ def add_new_option(data_path, new_file_name=None):
                 writer.writelines(json.dumps(d) + '\n')
 
             
-    print(correct / total)
-    import IPython; IPython.embed(); exit(1)
 
         
 def add_new_option_1(data_path, new_file_name=None):
@@ -183,3 +179,6 @@ def get_answer(file_path):
         writer.write(json.dumps(answer_dict))
 
 get_answer('./dataset/task1/dev.jsonl')
+
+if __name__ == "__main__":
+    add_new_option("./task2/task2_2/train.jsonl",)

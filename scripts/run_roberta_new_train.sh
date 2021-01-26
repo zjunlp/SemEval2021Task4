@@ -14,8 +14,8 @@ do
 for((j=1;j<=2;j++))
 do
 learning_rate=${i}e-6
-OUTPUT_DIR=./output/${model}_256_smoothing_lr${i}
-LOGGING_DIR=./logs/${model}_256_smoothing_lr${i}
+OUTPUT_DIR=./output/${model}_256_smoothing_lr${i}_${j}
+LOGGING_DIR=./logs/${model}_256_smoothing_lr${i}_${j}
 SEMEVAL_DIR_TASK2="./task2/task2_"${j}
 #  -m torch.distributed.launch --nproc_per_node=1  --nnodes=1\
 CUDA_VISIBLE_DEVICES=0 python \
