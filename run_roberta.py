@@ -65,8 +65,8 @@ def main():
 
     try:
         processor = processors[data_args.task_name]()
-        label_list = processor.get_labels()
-        num_labels = len(label_list)
+        # label_list = processor.get_labels()
+        # num_labels = len(label_list)
     except KeyError:
         raise ValueError("Task not found: %s" % (data_args.task_name))
 
@@ -78,13 +78,15 @@ def main():
 
     config = AutoConfig.from_pretrained(
         model_args.config_name if model_args.config_name else model_args.model_name_or_path,
-        num_labels=num_labels,
+        # num_labels=num_labels,
         finetuning_task=data_args.task_name,
         cache_dir=model_args.cache_dir,
+        mirror="tuna"
     )
     tokenizer = AutoTokenizer.from_pretrained(
         model_args.tokenizer_name if model_args.tokenizer_name else model_args.model_name_or_path,
         cache_dir=model_args.cache_dir,
+        mirror="tuna"
     )
     if training_args.label_smoothing:
         if "roberta" in model_args.model_name_or_path:
@@ -109,6 +111,7 @@ def main():
             from_tf=bool(".ckpt" in model_args.model_name_or_path),
             config=config,
             cache_dir=model_args.cache_dir,
+            mirror="tuna"
         )
 
     # Get datasets
@@ -178,7 +181,7 @@ def main():
     # Training
     if training_args.do_train:
         trainer.train(
-            model_path=model_args.model_name_or_path if os.path.isdir(model_args.model_name_or_path) else None
+            # model_path=model_args.model_name_or_path if os.path.isdir(model_args.model_name_or_path) else None
         )
         # It is not the best model, no need to save
         # trainer.save_model()

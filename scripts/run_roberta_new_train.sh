@@ -3,18 +3,20 @@ MODEL_NAME_OR_PATH="./pretrained_model/"${model}
 enhanced_model_path="output/pretrain_test3/roberta-large"
 # dataset dir
 SEMEVAL_DIR_TASK1="./dataset/task1"
-SEMEVAL_DIR_TASK2="./dataset/task2"
 # hyperparameter
 # lr = 1e-6 get the result
 
 epochs=12
 max_seq_length=256
 
-for((i=3;i<=9;i++))
+for((i=3;i<=7;i++))
+do
+for((j=1;j<=2;j++))
 do
 learning_rate=${i}e-6
 OUTPUT_DIR=./output/${model}_256_smoothing_lr${i}
 LOGGING_DIR=./logs/${model}_256_smoothing_lr${i}
+SEMEVAL_DIR_TASK2="./task2/task2_"${j}
 #  -m torch.distributed.launch --nproc_per_node=1  --nnodes=1\
 CUDA_VISIBLE_DEVICES=0 python \
         run_roberta.py \
@@ -39,4 +41,5 @@ CUDA_VISIBLE_DEVICES=0 python \
         --evaluate_during_training    \
         --overwrite_cache
 
+done
 done

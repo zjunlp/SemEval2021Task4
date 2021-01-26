@@ -110,6 +110,7 @@ def main():
     args = parser.parse_args()
     logger.warning("验证模型在验证集合上是否真实有效")
     acc = eval_model(args)
+    # import IPython; IPython.embed(); exit(1)
     save_answer(args, acc)
     print("finish model dev acc: {},\n saved file path: {}".format(acc, args.output_dir))
 

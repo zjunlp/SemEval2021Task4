@@ -121,13 +121,13 @@ if is_torch_available():
                     self.features = torch.load(cached_features_file)
                 else:
                     logger.info(f"Creating features from dataset file at {data_dir}")
-                    label_list = processor.get_labels()
                     if mode == Split.dev:
                         examples = processor.get_dev_examples(data_dir)
                     elif mode == Split.test:
                         examples = processor.get_test_examples(data_dir)
                     else:
                         examples = processor.get_train_examples(data_dir)
+                    label_list = processor.get_labels()
                     logger.info("Training examples: %s", len(examples))
                     self.features = convert_examples_to_features(
                         examples,
@@ -255,10 +255,13 @@ class SemEvalProcessor(DataProcessor):
 
     def get_labels(self):
         """See base class."""
-        return ["0", "1", "2", "3", "4"]
+        assert hasattr(self, "num_choices"), "some wrong, fix it"
+        # import IPython; IPython.embed(); exit(1)
+        return [str(i) for i in range(self.num_choices)]
 
     def _read_json(self, input_file):
         res = []
+        self._get_num_labels(input_file)
         with open(input_file, "r", encoding="utf-8") as f:
             for line in f.readlines():
                 json_f = json.loads(line)
@@ -274,18 +277,29 @@ class SemEvalProcessor(DataProcessor):
                 question= d['question'],  # in the swag dataset, the
                 # common beginning of each
                 # choice is stored in "sent2".
-                contexts=[d['article'],d['article'], d['article'], d['article'], d['article']],
-                endings=[d['option_0'],d['option_1'],d['option_2'],d['option_3'],d['option_4']],
+                contexts=[d['article']] * self.num_choices,
+                endings=[d['option_'+str(i)] for i in range(self.num_choices)],
                 label=str(d['label']) if 'label' in d else str("1"),
             )
             for _, d in enumerate(lines)  # we skip the line with the column names
         ]
 
+        # import IPython; IPython.embed(); exit(1)
         return examples
 
-    def fuzhi(self, sen):
-        t = sen+ ' '
-        return t * 5
+    def _get_num_labels(self, input_file):
+        if hasattr(self, "num_choices"):
+            return
+        with open(input_file, "r", encoding="utf-8") as f:
+            for line in f.readlines():
+                json_f = json.loads(line)
+                #TODO a little stupid, but works
+                for i in range(10,1,-1):
+                    if "option_"+str(i) in json_f:
+                        self.num_choices = i+1
+                        break
+                break
+
 
 class SemEvalEnhancedProcessor(DataProcessor):
 
