@@ -7,13 +7,13 @@ MODEL_NAME_OR_PATH="./pretrained_model/"${model}
 epochs=12
 max_seq_length=256
 
-for((i=3;i<=6;i++))
+for((i=3;i<=8;i++))
 do
 for((j=1;j<=2;j++))
 do
 learning_rate=${i}e-6
-OUTPUT_DIR=./output/${model}_256_enhanced_${i}
-LOGGING_DIR=./logs/${model}_256_enhanced_${i}
+OUTPUT_DIR=./output/${model}_256_enhanced_${i}_${j}
+LOGGING_DIR=./logs/${model}_256_enhanced_${i}_${j}
 DATA_DIR="./task2/enhanced_task2_"${j}
 #  -m torch.distributed.launch --nproc_per_node=1  --nnodes=1\
 CUDA_VISIBLE_DEVICES= python \
