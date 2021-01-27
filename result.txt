@@ -1,0 +1,16 @@
+acc :0.8745098039215686
+file path: ./output/roberta-large_384_test_label_smoothing_sliding_task2_lr2_1_lr2_1
+acc :0.8823529411764706
+file path: ./output/roberta-large_384_test_label_smoothing_sliding_task2_lr2_2_lr2_2
+acc :0.8784313725490196
+file path: ./output/roberta-large_384_test_label_smoothing_sliding_task2_lr3_1_lr3_1
+acc :0.8666666666666667
+file path: ./output/roberta-large_384_test_label_smoothing_sliding_task2_lr3_2_lr3_2
+acc :0.8823529411764706
+file path: ./output/roberta-large_384_test_label_smoothing_sliding_task2_lr4_1_lr4_1
+acc :0.8823529411764706
+file path: ./output/roberta-large_384_test_label_smoothing_sliding_task2_lr4_2_lr4_2
+acc :0.8745098039215686
+file path: ./output/roberta-large_384_test_label_smoothing_sliding_task2_lr5_1_lr5_1
+acc :0.8745098039215686
+file path: ./output/roberta-large_384_test_label_smoothing_sliding_task2_lr5_2_lr5_2

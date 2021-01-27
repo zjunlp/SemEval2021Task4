@@ -15,15 +15,15 @@ do
 for((j=1;j<=2;j++));
 do
 SEMEVAL_DIR_TASK2="./task2/task2_"${j}
-name=${model}_384_test_label_smoothing_sliding_task2_lr$i_j
-OUTPUT_DIR=./output/${name}_lr$i_j
-LOGGING_DIR=./logs/${name}_lr$i_j
+name=${model}_384_test_label_smoothing_sliding_task2_lr${i}_${j}
+OUTPUT_DIR=./output/${name}_lr${i}_${j}
+LOGGING_DIR=./logs/${name}_lr${i}_${j}
 learning_rate=${i}e-6
 #  -m torch.distributed.launch --nproc_per_node=1  --nnodes=1\
-CUDA_VISIBLE_DEVICES= python \
+CUDA_VISIBLE_DEVICES=5 python \
         run_roberta.py \
         --task_name semeval \
-        --model_name_or_path ${MODEL_NAME_OR_PATH} \
+        --model_name_or_path ${model} \
         --label_smoothing \
         --do_train \
         --do_eval \

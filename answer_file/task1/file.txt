@@ -1,0 +1,8 @@
+albert 普通训练 128 84
+roberta_enhanced 256 86
+roberta_enhanced_label_smoothing 128 84
+
+
+
+
+83.7 albert sliding 测试一哈

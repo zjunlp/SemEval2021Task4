@@ -737,6 +737,9 @@ class Trainer:
         model.zero_grad()
         disable_tqdm = self.args.disable_tqdm or not self.is_local_process_zero()
         train_pbar = trange(epochs_trained, int(np.ceil(num_train_epochs)), desc="Epoch", disable=disable_tqdm)
+        early_stop_flag = False
+        past_acc = 0.0
+        early_stop_epochs_count = 0
         for epoch in range(epochs_trained, int(np.ceil(num_train_epochs))):
             if isinstance(train_dataloader, DataLoader) and isinstance(train_dataloader.sampler, DistributedSampler):
                 train_dataloader.sampler.set_epoch(epoch)
@@ -752,10 +755,10 @@ class Trainer:
             # Reset the past mems state at the beginning of each epoch if necessary.
             if self.args.past_index >= 0:
                 self._past = None
-
+            epoch_best_acc = past_acc
             epoch_pbar = tqdm(epoch_iterator, desc="Iteration", disable=disable_tqdm)
             for step, inputs in enumerate(epoch_iterator):
-
+            
                 # Skip past any already trained steps if resuming training
                 if steps_trained_in_current_epoch > 0:
                     steps_trained_in_current_epoch -= 1
@@ -819,6 +822,8 @@ class Trainer:
                         operator = np.greater if self.args.greater_is_better else np.less
                         if self.state.best_metric == None or (self.state.best_metric < metrics['eval_acc'] and metrics['eval_acc'] > 0.8):
                             self._save_training(model, trial, metrics=metrics)
+                        
+                        epoch_best_acc = max(epoch_best_acc, metrics['eval_acc'])
 
                     # default we eval the model every self.eval_steps 
                     # if (
@@ -829,6 +834,13 @@ class Trainer:
                     #     self._save_training(model, trial)
 
                 epoch_pbar.update(1)
+            if epoch_best_acc > past_acc:
+                past_acc = epoch_best_acc
+                early_stop_epochs_count = 0
+            else:
+                early_stop_epochs_count += 1
+            if early_stop_epochs_count >= 2:
+                early_stop_flag = True
                 if self.args.max_steps > 0 and self.global_step >= self.args.max_steps:
                     break
             epoch_pbar.close()
@@ -850,6 +862,9 @@ class Trainer:
                         "configured. Check your training configuration if this is unexpected."
                     )
             if self.args.max_steps > 0 and self.global_step >= self.args.max_steps:
+                break
+                
+            if early_stop_flag:
                 break
 
         train_pbar.close()

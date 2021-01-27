@@ -15,7 +15,11 @@ LOGGING_DIR=./logs/${model}_256_task1_sliding_window
 
 
 #  -m torch.distributed.launch --nproc_per_node=1  --nnodes=1\
+<<<<<<< HEAD
 CUDA_VISIBLE_DEVICES=4 python \
+=======
+CUDA_VISIBLE_DEVICES=1 python \
+>>>>>>> 1860561739b51a3fed782aace5a464647dc194db
         run_roberta.py \
         --task_name semeval \
         --sliding_window \
