@@ -1,0 +1,20 @@
+acc :0.8745098039215686
+file path: ./output/roberta-large_256_smoothing_lr3_1
+acc :0.8578143360752056
+file path: ./output/roberta-large_256_smoothing_lr3
+acc :0.8745098039215686
+file path: ./output/roberta-large_256_smoothing_lr3_2
+acc :0.8683901292596945
+file path: ./output/roberta-large_256_smoothing_lr4
+acc :0.8705882352941177
+file path: ./output/roberta-large_256_smoothing_lr4_1
+acc :0.8719153936545241
+file path: ./output/roberta-large_256_smoothing_lr5
+acc :0.8784313725490196
+file path: ./output/roberta-large_256_smoothing_lr4_2
+acc :0.8625146886016452
+file path: ./output/roberta-large_256_smoothing_lr6
+acc :0.8705882352941177
+file path: ./output/roberta-large_256_smoothing_lr5_1
+acc :0.8666666666666667
+file path: ./output/roberta-large_256_smoothing_lr5_2

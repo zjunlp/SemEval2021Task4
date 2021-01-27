@@ -10,7 +10,7 @@ import argparse
 def write_answer_to_file(answer, args):
 
     if not os.path.exists(args.output): os.mkdir(args.output)
-    file_path = os.path.join(args.output, "subtask1.csv")
+    file_path = os.path.join(args.output, "subtask2.csv")
     # turn to Int
     answer = answer.astype(int)
     b = pd.DataFrame(answer, columns=['a']).astype(int)
@@ -42,17 +42,8 @@ if __name__ == "__main__":
 
 
     answer = []
-    answer_list = ["./answer_file/roberta-large_amax_512", "./answer_file/roberta_enhanced", "./answer_file/albert"]
-
-    answer_list = ["./answer_file/roberta_84_pretrain"]
-
-    answer_list = ["task1_enhanced_roberta_label_what_128"]
-
-    answer_list = [ "task1_albert_sliding", "roberta_enhanced", "roberta_enhanced", "roberta_smooth_label_85", "roberta-large_amax_512", "roberta-large_amax_512_test"]
-    answer_list = ["task1_albert_sliding"]
-
-    answer_list = ["task1_albert_sliding", "roberta_enhanced", "xlnet"]
-    answer_list = [os.path.join("./answer_file",a) for a in answer_list]
+    answer_list = ["roberta-87-256-smoothing"]
+    answer_list = [os.path.join("./answer_file/task2",a) for a in answer_list]
 
 
     for a in answer_list:
@@ -62,7 +53,7 @@ if __name__ == "__main__":
     answer = enssmble(answer)
     write_answer_to_file(answer, args)
 
-    os.system("zip  -j ./answer_file/3models.zip ./answer_file/subtask1.csv")
+    os.system("zip  -j ./answer_file/single_model.zip ./answer_file/subtask2.csv")
     
     # import IPython; IPython.embed(); exit(1)
 
