@@ -15,15 +15,15 @@ COMMENT
 #84.4
 MAX_SEQ_LENGTH=256
 MODEL_NAME_OR_PATH="output/albert-xxlarge-v2_pretrained_model_128_label_smoothing"
-MODEL_NAME_OR_PATH="output/roberta-large_256_test_lr3"
-OUTPUT_DIR="./answer_file/roberta_smooth_label_task2__test"
+MODEL_NAME_OR_PATH="./output/roberta-large_256_smoothing_lr5"
+OUTPUT_DIR="./answer_file/task2/roberta-87-256-smoothing"
 
 # albert_1="saved_model_file/albert_task2"
 # albert_2="saved_model_file/albert_task2_enhanced"
 # roberta_1="saved_model_file/roberta_task2"
 # xlnet="/home/chenxn/SemEval2021/output/xlnet-large-cased_task1_accumulate16_polylr8e-6/checkpoint-2750"
 
-CUDA_VISIBLE_DEVICES=3  python save_answer.py \
+CUDA_VISIBLE_DEVICES=2  python save_answer.py \
     --task_name semeval \
     --max_seq_length $MAX_SEQ_LENGTH \
     --data_dir "./dataset/task2" \

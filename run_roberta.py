@@ -18,10 +18,10 @@ from transformers import (
     LongformerModel,
     RobertaForMultipleChoice,
     BertModel,
-    AlbertForMultipleChoice
+    AlbertForMultipleChoice,
 )
 from utils import MultipleChoiceDataset, Split, processors, MultipleChoiceSlidingDataset, TrainingArguments, ModelArguments, DataTrainingArguments
-from model import Trainer, RobertaForMultipleChoiceWithLabelSmooth, AlbertForMultipleChoiceWithLabelSmooth
+from model import Trainer, RobertaForMultipleChoiceWithLabelSmooth, AlbertForMultipleChoiceWithLabelSmooth, XLNetForMultipleChoiceWithLabelSmooth
 from utils import delete_checkpoint_files_except_the_best, simple_accuracy, compute_metrics
 
 
@@ -98,6 +98,13 @@ def main():
             )
         elif "albert" in model_args.model_name_or_path:
             model = AlbertForMultipleChoiceWithLabelSmooth.from_pretrained(
+                model_args.model_name_or_path,
+                from_tf=bool(".ckpt" in model_args.model_name_or_path),
+                config=config,
+                cache_dir=model_args.cache_dir,
+            )
+        elif "xlnet" in model_args.model_name_or_path:
+            model = XLNetForMultipleChoiceWithLabelSmooth.from_pretrained(
                 model_args.model_name_or_path,
                 from_tf=bool(".ckpt" in model_args.model_name_or_path),
                 config=config,

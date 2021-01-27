@@ -151,4 +151,6 @@ test.pkl
 *.csv
 get_bad.py
 save.py
-utils/multiple_choices.py
+# utils/multiple_choices.py
+result.txt
+
