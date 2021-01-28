@@ -18,6 +18,7 @@ from torch.utils.data.dataloader import DataLoader
 from torch.utils.data.dataset import Dataset
 from torch.utils.data.distributed import DistributedSampler
 from torch.utils.data.sampler import RandomSampler, Sampler, SequentialSampler
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from tqdm.auto import tqdm, trange
 
 from transformers.data.data_collator import DataCollator, DataCollatorWithPadding, default_data_collator
@@ -461,9 +462,13 @@ class Trainer:
             )
         if self.lr_scheduler is None:
             scheduler_dict={"linear":get_linear_schedule_with_warmup,"cos":get_cosine_schedule_with_warmup,"poly":get_polynomial_decay_schedule_with_warmup}
-            self.lr_scheduler = scheduler_dict.get(self.args.lr_scheduler,"NOT FOUND")(
-                self.optimizer, num_warmup_steps=self.args.warmup_steps, num_training_steps=num_training_steps
-            )
+            if self.args.lr_scheduler in scheduler_dict:
+                self.lr_scheduler = scheduler_dict.get(self.args.lr_scheduler,"NOT FOUND")(
+                    self.optimizer, num_warmup_steps=self.args.warmup_steps, num_training_steps=num_training_steps
+                )
+            else:
+                if self.lr_scheduler == "reduceLR":
+                    self.lr_scheduler = ReduceLROnPlateau(self.optimizer, mode="min", factor=0.1)
 
     def setup_wandb(self):
         """

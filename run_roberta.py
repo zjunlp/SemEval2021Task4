@@ -21,8 +21,9 @@ from transformers import (
     AlbertForMultipleChoice,
 )
 from utils import MultipleChoiceDataset, Split, processors, MultipleChoiceSlidingDataset, TrainingArguments, ModelArguments, DataTrainingArguments
-from model import Trainer, RobertaForMultipleChoiceWithLabelSmooth, AlbertForMultipleChoiceWithLabelSmooth, XLNetForMultipleChoiceWithLabelSmooth
+from model import Trainer, RobertaForMultipleChoiceWithLabelSmooth, AlbertForMultipleChoiceWithLabelSmooth, XLNetForMultipleChoiceWithLabelSmooth, MPNetTokenizer, MPNetForMultipleChoiceWithLabelSmooth
 from utils import delete_checkpoint_files_except_the_best, simple_accuracy, compute_metrics
+from model import MPNetConfig, DebertaConfig, DebertaForMultipleChoiceWithLabelSmooth, DebertaTokenizer
 
 
 logger = logging.getLogger(__name__)
@@ -76,18 +77,45 @@ def main():
     # The .from_pretrained methods guarantee that only one local process can concurrently
     # download model & vocab.
 
-    config = AutoConfig.from_pretrained(
-        model_args.config_name if model_args.config_name else model_args.model_name_or_path,
-        # num_labels=num_labels,
-        finetuning_task=data_args.task_name,
-        cache_dir=model_args.cache_dir,
-        mirror="tuna"
-    )
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_args.tokenizer_name if model_args.tokenizer_name else model_args.model_name_or_path,
-        cache_dir=model_args.cache_dir,
-        mirror="tuna"
-    )
+    if "mpnet" in model_args.model_name_or_path:
+        config = MPNetConfig.from_pretrained(
+            model_args.config_name if model_args.config_name else model_args.model_name_or_path,
+            # num_labels=num_labels,
+            finetuning_task=data_args.task_name,
+            cache_dir=model_args.cache_dir,
+            # mirror="tuna"
+        )
+    elif "deberta" in model_args.model_name_or_path:
+        config = DebertaConfig.from_pretrained(
+            model_args.config_name if model_args.config_name else model_args.model_name_or_path,
+            # num_labels=num_labels,
+            finetuning_task=data_args.task_name,
+            cache_dir=model_args.cache_dir,
+        )
+    else:
+        config = AutoConfig.from_pretrained(
+            model_args.config_name if model_args.config_name else model_args.model_name_or_path,
+            # num_labels=num_labels,
+            finetuning_task=data_args.task_name,
+            cache_dir=model_args.cache_dir,
+            mirror="tuna"
+        )
+    if "mpnet" in model_args.model_name_or_path:
+        tokenizer = MPNetTokenizer.from_pretrained(
+            model_args.tokenizer_name if model_args.tokenizer_name else model_args.model_name_or_path,
+            cache_dir=model_args.cache_dir,
+        )
+    elif "deberta" in model_args.model_name_or_path:
+        tokenizer = DebertaTokenizer.from_pretrained(
+            model_args.tokenizer_name if model_args.tokenizer_name else model_args.model_name_or_path,
+            cache_dir=model_args.cache_dir,
+        )
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_args.tokenizer_name if model_args.tokenizer_name else model_args.model_name_or_path,
+            cache_dir=model_args.cache_dir,
+            mirror="tuna"
+        )
     if training_args.label_smoothing:
         if "roberta" in model_args.model_name_or_path:
             model = RobertaForMultipleChoiceWithLabelSmooth.from_pretrained(
@@ -105,6 +133,20 @@ def main():
             )
         elif "xlnet" in model_args.model_name_or_path:
             model = XLNetForMultipleChoiceWithLabelSmooth.from_pretrained(
+                model_args.model_name_or_path,
+                from_tf=bool(".ckpt" in model_args.model_name_or_path),
+                config=config,
+                cache_dir=model_args.cache_dir,
+            )
+        elif "mpnet" in model_args.model_name_or_path:
+            model = MPNetForMultipleChoiceWithLabelSmooth.from_pretrained(
+                model_args.model_name_or_path,
+                from_tf=bool(".ckpt" in model_args.model_name_or_path),
+                config=config,
+                cache_dir=model_args.cache_dir,
+            )
+        elif "deberta" in model_args.model_name_or_path:
+            model = DebertaForMultipleChoiceWithLabelSmooth.from_pretrained(
                 model_args.model_name_or_path,
                 from_tf=bool(".ckpt" in model_args.model_name_or_path),
                 config=config,

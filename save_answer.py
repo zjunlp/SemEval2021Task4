@@ -87,8 +87,10 @@ def save_answer(args, acc):
     res = {}
     res["answer"] = answer
     res["acc"] = acc
-    if not os.path.exists(args.output_dir): os.mkdir(args.output_dir)
-    with open(os.path.join(args.output_dir, 'result.pkl'), 'wb') as f:               #write
+    dir_output_dir = "/".join(args.output_dir.split("/")[:-1])
+    import IPython; IPython.embed(); exit(1)
+    if not os.path.exists(dir_output_dir): os.mkdir(dir_output_dir)
+    with open(args.output_dir, 'wb') as f:               #write
         pickle.dump(res, f)
     
 

@@ -1,5 +1,6 @@
 import os
 import shutil
+import pickle
 
 from typing import Dict, Optional
 from transformers import EvalPrediction
@@ -58,7 +59,20 @@ def write_answer_to_file(answer):
 #     answer = []
 #     with open("./dataset/task1/train.jsonl") as file:
 #         for line in file.readlines():
-            
+def get_diffience_between_input(a, b):
+    """
+    input: two file path, pickle path
+    """
+    with open(a, "rb") as file:
+        answer_a = np.argmax(pickle.load(file)["answer"], axis=1)
+    
+    with open(b, "rb") as file:
+        answer_b = np.argmax(pickle.load(file)["answer"], axis=1)
+
+
+    return (answer_a == answer_b).mean()
+    
+
 
 
 
