@@ -19,6 +19,9 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 import pickle
 import numpy as np
 
+
+from model import DebertaForMultipleChoiceWithLabelSmooth, DebertaTokenizer
+
 from get_bad_cases import eval_model
 
 import logging
@@ -70,10 +73,8 @@ def _prepare_inputs(inputs: Dict[str, Union[torch.Tensor, Any]]) -> Dict[str, Un
             inputs[k] = v.to(device)
     return inputs
 
-def save_answer(args, acc):
+def save_answer(args, acc, model, tokenizer):
     answer = []
-    model = AutoModelForMultipleChoice.from_pretrained(args.model_name_or_path).to(device)
-    tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path)
     eval_dataloader = get_dataloader(tokenizer, args)
     model.eval()
     with torch.no_grad():
@@ -88,7 +89,6 @@ def save_answer(args, acc):
     res["answer"] = answer
     res["acc"] = acc
     dir_output_dir = "/".join(args.output_dir.split("/")[:-1])
-    import IPython; IPython.embed(); exit(1)
     if not os.path.exists(dir_output_dir): os.mkdir(dir_output_dir)
     with open(args.output_dir, 'wb') as f:               #write
         pickle.dump(res, f)
@@ -111,10 +111,17 @@ def main():
     )
     args = parser.parse_args()
     logger.warning("验证模型在验证集合上是否真实有效")
-    acc = eval_model(args)
-    # import IPython; IPython.embed(); exit(1)
-    save_answer(args, acc)
+    if "deberta" in args.model_name_or_path:
+        model = DebertaForMultipleChoiceWithLabelSmooth.from_pretrained(args.model_name_or_path).to(device)
+        tokenizer = DebertaTokenizer.from_pretrained(args.model_name_or_path)
+    else:
+        model = AutoModelForMultipleChoice.from_pretrained(args.model_name_or_path).to(device)
+        tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path)
+
+    acc = eval_model(args, model, tokenizer)
     print("finish model dev acc: {},\n saved file path: {}".format(acc, args.output_dir))
+    # import IPython; IPython.embed(); exit(1)
+    save_answer(args, acc, model, tokenizer)
 
 
 

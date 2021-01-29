@@ -47,15 +47,35 @@ if __name__ == "__main__":
     roberta_sliding_85 = "roberta_sliding-85.5/result.pkl"
     roberta_sliding_87 = "roberta-87-256-smoothing_lr7/result.pkl"
     ronghe = "ronghe/result.pkl"
+    robert_90 = "answer_file/task2/roberta_90_1/result.pkl"
     xlnet_86 = "xlnet/result_large_origin.pkl"
 
     # roberta single model
-    answer_list = ["roberta-87-256-smoothing"]
     # roberta, albert
-    answer_list = ["roberta-87-256-smoothing_lr7/result.pkl", "albert_86_128/result.pkl"]
-    answer_list = [albert_86, roberta_sliding_85, roberta_sliding_87, xlnet_86]
-    answer_list = [os.path.join("./answer_file/task2",a) for a in answer_list]
+    # answer_list = ["roberta-87-256-smoothing_lr7/result.pkl", "albert_86_128/result.pkl"]
 
+
+    # answer_list = [albert_86, roberta_sliding_85, roberta_sliding_87, xlnet_86]
+
+    # # gogogogo
+    # answer_list = ["roberta_90/result.pkl", "roberta_90_1/result.pkl"]
+    # answer_list = ["roberta/2/86-6.pkl", "roberta/2/89.pkl"]
+
+    """
+    5个模型我取最高的,
+    """
+    answer_list= [
+        "albert_decay-89/result.pkl",
+        "roberta_90/result.pkl",
+        "roberta/2/89.pkl",
+        "xlnet/result_large_task2_1.pkl"
+
+    ]
+
+
+
+
+    answer_list = [os.path.join("./answer_file/task2",a) for a in answer_list]
 
     for a in answer_list:
         args.input = a
@@ -64,7 +84,7 @@ if __name__ == "__main__":
     answer = enssmble(answer)
     write_answer_to_file(answer, args)
 
-    os.system("zip  -j ./answer_file/4model.zip ./answer_file/subtask2.csv")
+    os.system("zip  -j ./answer_file/1model.zip ./answer_file/subtask2.csv")
     
     # import IPython; IPython.embed(); exit(1)
 

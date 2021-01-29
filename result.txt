@@ -1,4 +1,21 @@
 acc :0.8745098039215686
+<<<<<<< HEAD
+file path: ./output/roberta-large_384_test_label_smoothing_sliding_task2_lr2_1_lr2_1
+acc :0.8823529411764706
+file path: ./output/roberta-large_384_test_label_smoothing_sliding_task2_lr2_2_lr2_2
+acc :0.8784313725490196
+file path: ./output/roberta-large_384_test_label_smoothing_sliding_task2_lr3_1_lr3_1
+acc :0.8666666666666667
+file path: ./output/roberta-large_384_test_label_smoothing_sliding_task2_lr3_2_lr3_2
+acc :0.8823529411764706
+file path: ./output/roberta-large_384_test_label_smoothing_sliding_task2_lr4_1_lr4_1
+acc :0.8823529411764706
+file path: ./output/roberta-large_384_test_label_smoothing_sliding_task2_lr4_2_lr4_2
+acc :0.8745098039215686
+file path: ./output/roberta-large_384_test_label_smoothing_sliding_task2_lr5_1_lr5_1
+acc :0.8745098039215686
+file path: ./output/roberta-large_384_test_label_smoothing_sliding_task2_lr5_2_lr5_2
+=======
 file path: ./output/roberta-large_256_smoothing_lr3_1
 acc :0.8578143360752056
 file path: ./output/roberta-large_256_smoothing_lr3
@@ -18,6 +35,7 @@ acc :0.8705882352941177
 file path: ./output/roberta-large_256_smoothing_lr5_1
 acc :0.8666666666666667
 file path: ./output/roberta-large_256_smoothing_lr5_2
+<<<<<<< HEAD
 acc :0.8777908343125734
 file path: ./output/roberta-large_256_smoothing_lr7
 acc :0.8745098039215686
@@ -36,3 +54,22 @@ acc :0.8507638072855465
 file path: ./output/deberta-large_256_smoothing_lr3
 acc :0.8862745098039215
 file path: ./output/roberta-large_256_smoothing_lr2e-5
+=======
+>>>>>>> 2d5d23949b8dbb3be5b33833e8d285b765dfb676
+>>>>>>> e5cb2777463bd1f8a20717ded914f0233d6274f8
+acc :0.8531139835487661
+file path: ./output/deberta-large_256_smoothing_lr4
+acc :0.8666666666666667
+file path: ./output/roberta-large_256_smoothing_lr3e-5
+acc :0.8589894242068156
+file path: ./output/deberta-large_256_smoothing_lr5
+acc :0.8941176470588236
+file path: ./output/roberta-large_256_smoothing_lr4e-5
+acc :0.8648648648648649
+file path: ./output/deberta-large_256_smoothing_lr6
+acc :0.8862745098039215
+file path: ./output/roberta-large_256_smoothing_lr5e-5
+acc :0.8695652173913043
+file path: ./output/deberta-large_256_smoothing_lr7
+acc :0.8980392156862745
+file path: ./output/deberta-large_256_smoothing_decay_lr7_1
