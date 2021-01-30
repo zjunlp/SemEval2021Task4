@@ -1608,7 +1608,7 @@ class XLNetForTokenClassification(XLNetPreTrainedModel):
         )
 
         sequence_output = outputs[0]
-
+        # sequence_output=sequence_output*  
         logits = self.classifier(sequence_output)
 
         loss = None
