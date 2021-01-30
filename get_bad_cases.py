@@ -130,9 +130,7 @@ def model_ensemble_offline(file_list):
     answer = np.argmax(answer, axis=1)
 
 
-def eval_model(args):
-    model = AutoModelForMultipleChoice.from_pretrained(args.model_name_or_path).to(device)
-    tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path)
+def eval_model(args, model, tokenizer):
     eval_dataloader = get_dataloader(tokenizer, args)
     preds = get_answer(model, eval_dataloader)
     preds = torch.argmax(torch.tensor(preds),dim=1).cpu().numpy()

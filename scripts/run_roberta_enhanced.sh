@@ -16,10 +16,20 @@ learning_rate=${i}e-6
 OUTPUT_DIR=./output/${model}_256_enhanced_${i}
 LOGGING_DIR=./logs/${model}_256_enhanced_${i}
 #  -m torch.distributed.launch --nproc_per_node=1  --nnodes=1\
+<<<<<<< HEAD
+CUDA_VISIBLE_DEVICES=4 python \
+=======
 CUDA_VISIBLE_DEVICES=1 python \
+>>>>>>> 1860561739b51a3fed782aace5a464647dc194db
         run_roberta.py \
         --task_name semeval \
+<<<<<<< HEAD:scripts/run_roberta_sliding.sh
+        --sliding_window \
+        --label_smoothing \
+        --model_name_or_path ${model} \
+=======
         --model_name_or_path ${enhanced_model_path} \
+>>>>>>> 2d5d23949b8dbb3be5b33833e8d285b765dfb676:scripts/run_roberta_enhanced.sh
         --do_train \
         --do_eval \
         --label_smoothing \

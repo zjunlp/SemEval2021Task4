@@ -153,4 +153,5 @@ get_bad.py
 save.py
 # utils/multiple_choices.py
 result.txt
+*.txt
 

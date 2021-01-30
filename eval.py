@@ -1,8 +1,12 @@
 import torch
 import transformers 
+import argparse
+from utils import get_diffience_between_input
 
 
-with open('./saved_model_file/roberta-task2/training_args.bin','rb') as file:
-     a = torch.load(file)
+parser = argparse.ArgumentParser(description="123")
+parser.add_argument("path", type=str, nargs="+", help="")
 
-     import IPython; IPython.embed(); exit(1)
+args = parser.parse_args()
+
+print(get_diffience_between_input(*tuple(args.path)))

@@ -2,3 +2,6 @@ from .Trainer import *
 from .roberta_label_smoothing import RobertaForMultipleChoiceWithLabelSmooth
 from .albert_label_smoothing import AlbertForMultipleChoiceWithLabelSmooth
 from .xlnet_label_smoothing import XLNetForMultipleChoiceWithLabelSmooth
+from .tokenization_mpnet import MPNetTokenizer
+from .mpnet import MPNetForMultipleChoiceWithLabelSmooth, MPNetConfig
+from .modeling_deberta import DebertaForMultipleChoiceWithLabelSmooth, DebertaTokenizer, DebertaConfig
