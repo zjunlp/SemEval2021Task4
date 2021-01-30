@@ -26,6 +26,8 @@ def get_answer(args):
 
 def enssmble(answer):
     weight = [(a["acc"] - 0.83)*100. if a["acc"] > 0.8 else 1 for a in answer ]
+    accs = [a["acc"] for a in answer]
+    print("各个模型的acc :" , accs)
 
     real_answer = np.zeros_like(answer[0]["answer"])
     for idx, w in enumerate(weight):
@@ -65,10 +67,12 @@ if __name__ == "__main__":
     5个模型我取最高的,
     """
     answer_list= [
-        "albert_decay-89/result.pkl",
-        "roberta_90/result.pkl",
-        "roberta/2/89.pkl",
-        "xlnet/result_large_task2_1.pkl"
+        # "albert_decay-89/result.pkl",
+        # "roberta_90/result.pkl",
+        # "roberta/2/89.pkl",
+        # "xlnet/result_large_task2_1.pkl"
+        "deberta/91_1.pkl",
+        "deberta/91_2.pkl"
 
     ]
 
@@ -84,7 +88,7 @@ if __name__ == "__main__":
     answer = enssmble(answer)
     write_answer_to_file(answer, args)
 
-    os.system("zip  -j ./answer_file/1model.zip ./answer_file/subtask2.csv")
+    os.system("zip  -j ./answer_file/deberta_model_best.zip ./answer_file/subtask2.csv")
     
     # import IPython; IPython.embed(); exit(1)
 
