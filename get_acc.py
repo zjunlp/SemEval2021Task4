@@ -143,19 +143,19 @@ def print_result(args):
     labels = get_labels(args)
     right_index = [340,680,1020,1360]
     # right_index = [364,688,1012,1336]
-    passenge_length = []
+    passenge_nums = []
     right = -1
     for index in right_index:
         left = right + 1
         right = max([i for i,x in enumerate(len_answer) if x[0] <= index])
         acc = compute_acc(len_answer,labels,left,right)
         result.append(acc)
-        passenge_length.append(right -left + 1)
+        passenge_nums.append(right -left + 1)
     left = right + 1
     acc = compute_acc(len_answer,labels,left,len(len_answer) - 1)
-    passenge_length.append(len(len_answer) -left)
+    passenge_nums.append(len(len_answer) -left)
     result.append(acc)
-    print(result,passenge_length)
+    print(result,passenge_nums)
 
 
 def main():
