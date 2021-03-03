@@ -161,16 +161,16 @@ def print_result(args):
 def main():
 
     parser = argparse.ArgumentParser(description='hope it will work')
-    default_path = './output/roberta-base_enhanced/checkpoint-14000'
+    default_path = "output/roberta-large_256_baseline"
     parser.add_argument('--model_name_or_path', type=str, help='an integer for the accumulator', default=default_path)
-    parser.add_argument('--data_dir', type=str, help='an integer for the accumulator', default='./dataset/training_data')
-    parser.add_argument('--max_seq_length', type=int, help='an integer for the accumulator', default='./dataset/training_data')
+    parser.add_argument('--data_dir', type=str, help='an integer for the accumulator', default='./dataset/task2')
+    parser.add_argument('--max_seq_length', type=int, help='an integer for the accumulator', default=256)
     parser.add_argument('--sliding_window', help='an integer for the accumulator', default=False,action="store_true" )
     parser.add_argument('--task_name',type=str,  help='an integer for the accumulator', default="semeval" )
     parser.add_argument('--overwrite_cache', help='overwrite_cache', default=False,action="store_true" )
-    parser.add_argument("--answer_list", nargs="+", default=["a", "b"], help="answer pickle")
-    parser.add_argument("--model_list", nargs="+", default=["a", "b"], help="model list")
-    parser.add_argument("--model_path",type=str,default="/home/chenxn/SemEval2021/pretrained_model/xlnet-large-cased")
+    # parser.add_argument("--answer_list", nargs="+", default=["a", "b"], help="answer pickle")
+    # parser.add_argument("--model_list", nargs="+", default=["a", "b"], help="model list")
+    parser.add_argument("--model_path",type=str,default="output/roberta-large_256_baseline")
 
     args = parser.parse_args()
     print_result(args)

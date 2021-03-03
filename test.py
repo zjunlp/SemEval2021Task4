@@ -7,6 +7,7 @@ import torch
 
 import argparse
 
+
 def write_answer_to_file(answer, args):
 
     if not os.path.exists(args.output): os.mkdir(args.output)

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # semeval 思考
 
 ## TODO
@@ -337,3 +338,6 @@ did you know wikipedia
 1. 对这些预料进行 mask entity+继续预训练+fine-tune
 2. 更多的模型架构 孪生网络架构 few-shot learning 找最近领
 
+=======
+# SemEval2021Task4
+>>>>>>> b2b634f127f9bfcdddca22ba6b9ec11ef9b8032f
