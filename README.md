@@ -51,15 +51,12 @@ Finally, we get the best model files and ensemble them with weighted voting (wei
 
 To cite our paper, use the following bibtex
 
+```bibtex
 @article{xie2021zjuklab,
-
   title={ZJUKLAB at SemEval-2021 Task 4: Negative Augmentation with Language Model for Reading Comprehension of Abstract Meaning},
-  
   author={Xie, Xin and Chen, Xiangnan and Chen, Xiang and Wang, Yong and Zhang, Ningyu and Deng, Shumin and Chen, Huajun},
-  
   journal={arXiv preprint arXiv:2102.12828},
-  
   year={2021}
-  
 }
+```
 
