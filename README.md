@@ -1,6 +1,6 @@
 # SemEval2021Task4
 
-The 4th rank solution to [the SemEval 2021 Task4](https://competitions.codalab.org/competitions/26153)
+The 4th rank system of [the SemEval 2021 Task4](https://competitions.codalab.org/competitions/26153)
 
 ## Environment
 
