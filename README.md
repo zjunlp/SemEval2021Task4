@@ -1,6 +1,6 @@
 # SemEval2021Task4
 
-The 4th rank system of [the SemEval 2021 Task4](https://competitions.codalab.org/competitions/26153)
+This repository is the official implementation of the ACL 2021 (Semeval Workshop) paper [ZJUKLAB at SemEval-2021 Task 4: Negative Augmentation with Language Model for Reading Comprehension of Abstract Meaning](https://arxiv.org/pdf/2102.12828.pdf) which is the 4th rank system of [the SemEval 2021 Task4](https://competitions.codalab.org/competitions/26153). 
 
 ## Environment
 
