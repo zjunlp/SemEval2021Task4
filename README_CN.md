@@ -1,4 +1,4 @@
-[**中文**](https://github.com/zjunlp/SemEval2021Task4/blob/master/README_CN.md) | [**English**](https://github.com/zjunlp/SemEval2021Task4/)
+[**中文**](https://github.com/zjunlp/SemEval2021Task4/blob/main/README_CN.md) | [**English**](https://github.com/zjunlp/SemEval2021Task4/)
 
 >📋  针对我们项目***代码***的 README.md模板。请把上面两个链接（中文readme和英文readme版本）分别替换成项目中真实的链接。
 

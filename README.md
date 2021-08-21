@@ -1,4 +1,4 @@
-[**中文**](https://github.com/zjunlp/SemEval2021Task4/blob/master/README_CN.md) | [**English**](https://github.com/zjunlp/SemEval2021Task4/)
+[**中文**](https://github.com/zjunlp/SemEval2021Task4/blob/main/README_CN.md) | [**English**](https://github.com/zjunlp/SemEval2021Task4/)
 
 
 <p align="center">
