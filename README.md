@@ -102,7 +102,3 @@ If you use or extend our work, please cite the following paper:
 }
 ```
 
-
-## Contributing
-
->📋  Pick a licence and describe how to contribute to your code repository. 
