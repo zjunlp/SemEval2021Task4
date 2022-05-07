@@ -94,11 +94,33 @@ Our model achieves the following performance on :
 If you use or extend our work, please cite the following paper:
 
 ```
-@article{xie2021zjuklab,
-  title={ZJUKLAB at SemEval-2021 Task 4: Negative Augmentation with Language Model for Reading Comprehension of Abstract Meaning},
-  author={Xie, Xin and Chen, Xiangnan and Chen, Xiang and Wang, Yong and Zhang, Ningyu and Deng, Shumin and Chen, Huajun},
-  journal={arXiv preprint arXiv:2102.12828},
-  year={2021}
+@inproceedings{DBLP:conf/semeval/XieCCWZDC21,
+  author    = {Xin Xie and
+               Xiangnan Chen and
+               Xiang Chen and
+               Yong Wang and
+               Ningyu Zhang and
+               Shumin Deng and
+               Huajun Chen},
+  editor    = {Alexis Palmer and
+               Nathan Schneider and
+               Natalie Schluter and
+               Guy Emerson and
+               Aur{\'{e}}lie Herbelot and
+               Xiaodan Zhu},
+  title     = {{ZJUKLAB} at SemEval-2021 Task 4: Negative Augmentation with Language
+               Model for Reading Comprehension of Abstract Meaning},
+  booktitle = {Proceedings of the 15th International Workshop on Semantic Evaluation,
+               SemEval@ACL/IJCNLP 2021, Virtual Event / Bangkok, Thailand, August
+               5-6, 2021},
+  pages     = {810--819},
+  publisher = {Association for Computational Linguistics},
+  year      = {2021},
+  url       = {https://doi.org/10.18653/v1/2021.semeval-1.108},
+  doi       = {10.18653/v1/2021.semeval-1.108},
+  timestamp = {Mon, 22 Nov 2021 09:21:39 +0100},
+  biburl    = {https://dblp.org/rec/conf/semeval/XieCCWZDC21.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 ```
 
